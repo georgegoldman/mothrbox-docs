@@ -19,9 +19,9 @@ const codeFont = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AriaDocsLite - Template",
+  title: "Mothrbox",
   description:
-    "This comprehensive documentation template, crafted with Next.js and available as open-source, delivers a sleek and responsive design, tailored to meet all your project documentation requirements.",
+    "Welcome to the official documentation site for Mothrbox — the privacy-first data storage layer for modern decentralized and hybrid applications.",
 };
 
 export default function RootLayout({
