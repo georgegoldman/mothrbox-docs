@@ -1,0 +1,69 @@
+---
+title: Introduction
+description: Overview of Mothrbox – a privacy-first data storage layer built with RESTful APIs.
+---
+
+**Mothrbox** is a **privacy-first, developer-focused** data storage layer built for modern decentralized and hybrid applications. It enables you to securely encrypt, store, and retrieve anything — models, documents, blobs, metadata — using **RESTful APIs**.
+
+Mothrbox takes care of all the heavy lifting: from secure encryption (ECC) to ultra-fast decryption and edge-based storage. Whether you're building a Web3 app, an AI backend, or handling confidential documents, Mothrbox simplifies secure storage.
+
+## Getting Started
+
+To begin using Mothrbox:
+
+- [ ] Create a Mothrbox account
+- [ ] Generate an API key
+- [ ] Start uploading encrypted or plain files using the REST API
+
+> ⚠️ **Note**: SDKs for languages like Rust, JavaScript, and Python are coming soon. For now, integration is fully supported through REST endpoints.
+
+## Storage Modes
+
+Mothrbox supports two flexible modes:
+
+- **🔐 Encrypted Mode**  
+  Your data is encrypted client-side with modern ECC (NIST P-256) and stored securely. Only those with the correct private key can decrypt it.
+
+- **📂 Plain Mode**  
+  Data is stored unencrypted for public or open-access scenarios. Ideal for media, metadata, or fast delivery.
+
+## Blockquotes
+
+> “With Mothrbox, you don’t need to choose between speed and security — you get both.”
+
+The API is designed to be fast, intuitive, and secure — so you can ship faster and protect user data effortlessly.
+
+## Example REST Request
+
+```http
+POST /v1/storage/encrypted
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "data": "base64-encoded-payload",
+  "filename": "report.pdf"
+}
+
+```
+
+> This endpoint stores encrypted content. You can later retrieve and decrypt it using the corresponding private key.
+
+## Use Cases
+- 🔐 Role-based or token-gated content systems
+
+- 💾 Off-chain embeddings, AI model storage
+
+- 🧾 Secure invoices, receipts, or billing records
+
+- 🧬 Medical or identity document vaults
+
+- 🚀 Web2+3 hybrid apps needing secure persistence
+
+## Conclusion
+**Mothrbox** brings high-performance, secure storage to your stack via a simple REST API. Whether you’re handling public media or deeply confidential documents, Mothrbox provides encryption, storage, and retrieval — all in one place.
+
+Built with privacy in mind. Powered by performance. Ready for developers.
+
+> 🚧 Stay tuned — official SDKs are on the way!
+

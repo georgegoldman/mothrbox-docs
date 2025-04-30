@@ -1,0 +1,19 @@
+
+# ⚡ Quickstart
+
+Here’s a minimal example to store an encrypted file.
+## Upload a File (Encrypted Mode)
+```bash
+curl -X POST https://api.mothrbox.io/v1/storage/encrypted \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename": "secret.txt",
+    "data": "VGhpcyBpcyBhIHNlY3JldCBmaWxlIQ=="
+  }'
+  ```
+  ## Retrieve a File
+  ```bash
+  curl -X GET https://api.mothrbox.io/v1/storage/:fileId \
+  -H "Authorization: Bearer YOUR_API_KEY"curl -X GET https://api.mothrbox.io/v1/storage/:fileId \
+```

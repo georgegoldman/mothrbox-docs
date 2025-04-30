@@ -1,0 +1,15 @@
+# 🔐 Authentication
+All requests to Mothrbox require an API key.
+## How to Authenticate
+Add your API key to the ```Authorization``` header:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Security Tips
+- Never expose API keys in client-side code
+
+- Rotate keys periodically via the dashboard
+
+- Use .env files for secrets

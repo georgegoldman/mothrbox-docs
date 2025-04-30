@@ -1,0 +1,32 @@
+---
+title: Installation
+description: How to get started with Mothrbox.
+---
+
+## Installation
+
+There’s nothing to install — Mothrbox is a cloud-native service with a RESTful API. Just set up your account and you’re ready to store encrypted or plain data.
+
+### Step 1: Create a Mothrbox Account
+
+Go to [mothrbox](https://mothrbox-frontend.vercel.app/) and sign up. This gives you access to the dashboard and key management.
+
+### Step 2: Generate an API Key
+
+In your dashboard, generate a new API key. This will be used to authenticate every request to Mothrbox.
+
+> ⚠️ Keep your API key secret — treat it like a password.
+
+### Step 3: Start Making API Calls
+
+Use `curl`, Postman, or your backend service to start storing or retrieving files via the Mothrbox API.
+
+```bash
+curl -X POST https://api.mothrbox.io/v1/storage/encrypted \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"filename":"model.bin", "data":"base64-encoded-data"}'
+```
+
+> 💡 SDKs for Rust, JS, and Python are on the way. This page will be updated as soon as they’re available.
+
