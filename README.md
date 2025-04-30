@@ -53,6 +53,6 @@ We welcome improvements, fixes, and community use cases!
 
 ## 🔐 About Mothrbox
 
-Visit [mothrbox.io](#) to learn more about the API, features, and upcoming SDKs.
+Visit [mothrbox](https://mothrbox-docs.vercel.app/) to learn more about the API, features, and upcoming SDKs.
 
 Made with ❤️ for the encrypted web.
