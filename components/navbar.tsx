@@ -12,7 +12,7 @@ export const NAVLINKS = [
   },
   {
     title: "GitHub",
-    href: "https://github.com/georgegoldman/mothrbox",
+    href: "https://github.com/georgegoldman/mothrbox_v2",
   },
 ];
 
