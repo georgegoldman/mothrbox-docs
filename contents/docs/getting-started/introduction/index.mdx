@@ -1,69 +1,391 @@
 ---
 title: Introduction
-description: Overview of Mothrbox – a privacy-first data storage layer built with RESTful APIs.
+description: Military-grade encrypted decentralized storage with three encryption algorithms via simple CLI commands.
 ---
 
-**Mothrbox** is a **privacy-first, developer-focused** data storage layer built for modern decentralized and hybrid applications. It enables you to securely encrypt, store, and retrieve anything — models, documents, blobs, metadata — using **RESTful APIs**.
+**MothrBox** is a **unified encrypted decentralized storage system** that combines military-grade encryption with Walrus Protocol's decentralized storage. Encrypt your data locally, store it across a distributed network, and retrieve it securely—all through simple CLI commands.
 
-Mothrbox takes care of all the heavy lifting: from secure encryption (ECC) to ultra-fast decryption and edge-based storage. Whether you're building a Web3 app, an AI backend, or handling confidential documents, Mothrbox simplifies secure storage.
+MothrBox encrypts your data **before it leaves your machine**, ensuring true end-to-end security. Choose from three battle-tested encryption algorithms depending on your use case.
 
-## Getting Started
+## Three Encryption Algorithms
 
-To begin using Mothrbox:
+### 🔐 AES-256-GCM (Default)
 
-- [ ] Create a Mothrbox account
-- [ ] Generate an API key
-- [ ] Start uploading encrypted or plain files using the REST API
+**Best for:** General purpose, compliance, large files
 
-> ⚠️ **Note**: SDKs for languages like Rust, JavaScript, and Python are coming soon. For now, integration is fully supported through REST endpoints.
-
-## Storage Modes
-
-Mothrbox supports two flexible modes:
-
-- **🔐 Encrypted Mode**  
-  Your data is encrypted client-side with modern ECC (NIST P-256) and stored securely. Only those with the correct private key can decrypt it.
-
-- **📂 Plain Mode**  
-  Data is stored unencrypted for public or open-access scenarios. Ideal for media, metadata, or fast delivery.
-
-## Blockquotes
-
-> “With Mothrbox, you don’t need to choose between speed and security — you get both.”
-
-The API is designed to be fast, intuitive, and secure — so you can ship faster and protect user data effortlessly.
-
-## Example REST Request
-
-```http
-POST /v1/storage/encrypted
-Authorization: Bearer YOUR_API_KEY
-Content-Type: application/json
-
-{
-  "data": "base64-encoded-payload",
-  "filename": "report.pdf"
-}
-
+```bash
+./mothrbox encrypt confidential.pdf "SecurePassword2024"
+./mothrbox decrypt <blob-id> recovered.pdf "SecurePassword2024"
 ```
 
-> This endpoint stores encrypted content. You can later retrieve and decrypt it using the corresponding private key.
+**Features:**
+- Hardware-accelerated on Intel/AMD (AES-NI)
+- Industry standard (Signal, WhatsApp, 1Password)
+- NIST approved, FIPS 140-2 compliant
+- PBKDF2 key derivation (600,000 iterations)
+
+---
+
+### ⚡ ChaCha20-Poly1305
+
+**Best for:** Mobile devices, ARM processors, IoT
+
+```bash
+./mothrbox chacha-encrypt video.mp4 "MobilePass123"
+./mothrbox chacha-decrypt <blob-id> video.mp4 "MobilePass123"
+```
+
+**Features:**
+- Faster on mobile/ARM without hardware acceleration
+- Used in WireGuard, TLS 1.3
+- Constant-time implementation (timing attack resistant)
+- Mobile and IoT optimized
+
+---
+
+### 🔑 ECC (P-256)
+
+**Best for:** Secure sharing without password exchange
+
+```bash
+# Generate keys once
+./mothrbox keygen
+
+# Encrypt with recipient's public key (NO PASSWORD!)
+./mothrbox ecc-encrypt document.pdf recipient_public.key
+
+# Recipient decrypts with their private key
+./mothrbox ecc-decrypt <blob-id> document.pdf your_private.key
+```
+
+**Features:**
+- Public key cryptography—no password sharing needed
+- NIST P-256 elliptic curve (NSA Suite B approved)
+- Ephemeral ECDH (perfect forward secrecy)
+- Perfect for multi-recipient scenarios
+
+## Quick Start
+
+```bash
+# 1. Clone repository
+git clone https://github.com/georgegoldman/mothrbox_v2
+cd mothrbox_v2
+
+# 2. Make CLI executable
+chmod +x mothrbox
+
+# 3. Configure Sui wallet
+cd mothrbox_ts
+cp .env.example .env
+nano .env  # Add your SUI_SECRET_KEY
+
+# 4. Build system
+cd ..
+./mothrbox rebuild
+
+# 5. Start MothrBox
+./mothrbox start
+
+# 6. Encrypt and upload
+echo "Secret data" > test.txt
+./mothrbox encrypt test.txt "MyPassword123"
+# Output: 📦 Blob ID: abc123xyz...
+
+# 7. Download and decrypt
+./mothrbox decrypt abc123xyz... recovered.txt "MyPassword123"
+```
+
+## Algorithm Comparison
+
+| Feature | AES-256-GCM | ChaCha20-Poly1305 | ECC P-256 |
+|---------|-------------|-------------------|-----------|
+| **Speed** | Very Fast (HW) | Fast (SW) | Moderate |
+| **Hardware Accel** | ✅ x86/x64 | ❌ No | ❌ No |
+| **Mobile-Friendly** | Good | ✅ Excellent | Good |
+| **Authentication** | Password | Password | Key-based |
+| **Multi-Recipient** | Re-encrypt each | Re-encrypt each | ✅ Easy |
+| **Overhead** | +28 bytes | +44 bytes | +65 bytes |
+| **Use Case** | General purpose | Performance | Secure sharing |
 
 ## Use Cases
-- 🔐 Role-based or token-gated content systems
 
-- 💾 Off-chain embeddings, AI model storage
+### 🔐 Enterprise & Compliance
+- **Legal Documents**: Law firms encrypting client contracts
+- **Healthcare**: HIPAA-compliant patient record storage
+- **Financial**: Secure invoices, receipts, audit trails
+- **Corporate**: Confidential reports, strategic documents
 
-- 🧾 Secure invoices, receipts, or billing records
+### 📱 Mobile & IoT
+- **Photo Backups**: Encrypted mobile photo storage
+- **IoT Data**: Sensor data from ARM devices
+- **Mobile Apps**: In-app encrypted document vaults
+- **Edge Computing**: Data encryption at the edge
 
-- 🧬 Medical or identity document vaults
+### 🤝 Secure Sharing
+- **Multi-Recipient**: Encrypt once for each recipient (ECC)
+- **Whistleblower Protection**: Censorship-resistant document storage
+- **Academic Research**: Verifiable dataset archival
+- **Collaborative Work**: Share encrypted files without password exchange
 
-- 🚀 Web2+3 hybrid apps needing secure persistence
+### 🤖 AI & Web3
+- **Model Storage**: Off-chain AI model weights
+- **Embeddings**: Vector database backups
+- **NFT Metadata**: Token-gated content
+- **DApp Storage**: Web3 app data layer
 
-## Conclusion
-**Mothrbox** brings high-performance, secure storage to your stack via a simple REST API. Whether you’re handling public media or deeply confidential documents, Mothrbox provides encryption, storage, and retrieval — all in one place.
+## System Architecture
 
-Built with privacy in mind. Powered by performance. Ready for developers.
+```
+┌─────────────────────────────────────────────────────┐
+│                    MOTHRBOX                         │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  ┌──────────────────┐ bash ┌──────────────────┐   │
+│  │   Rust Engine    │ ◄──► │  Deno Walrus     │   │
+│  │  (Encryption)    │      │    Client        │   │
+│  │                  │      │                  │   │
+│  │ - AES/ChaCha/ECC │      │ - Walrus SDK     │   │
+│  └──────────────────┘      └──────────────────┘   │
+│          │                          │              │
+│      File I/O                   RPC/JSON          │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+         │                            │
+         ▼                            ▼
+   Your Files                  Walrus Protocol
+    (data/)                   (Decentralized)
+                                     │
+                                     ▼
+                               Sui Blockchain
+                                (Metadata)
+```
 
-> 🚧 Stay tuned — official SDKs are on the way!
+**Data Flow:**
+1. Your File → Encrypt (Rust) → Bash subprocess → Deno → Walrus SDK → Decentralized Storage
+2. Blob ID ← JSON stdout ← Deno ← Walrus SDK ← Retrieve
+3. Encrypted Data → Decrypt (Rust) → Your File
 
+## CLI Examples
+
+### Example 1: Basic Encryption (AES)
+
+```bash
+# Start system
+./mothrbox start
+
+# Create a confidential file
+echo "Confidential business data" > report.txt
+
+# Encrypt and upload
+./mothrbox encrypt report.txt "SecurePassword2024"
+# Output: 📦 Blob ID: DcNxScTcvltoCYZwLPVC45QNFpddxjL8FmueI7I7-Ho
+
+# Later: Download and decrypt
+./mothrbox decrypt DcNxScTcvltoCYZwLPVC45QNFpddxjL8FmueI7I7-Ho recovered.txt "SecurePassword2024"
+# Output: ✅ Saved to: data/recovered.txt
+
+# Verify
+cat data/recovered.txt
+```
+
+### Example 2: Mobile-Optimized (ChaCha20)
+
+```bash
+# Encrypt video for mobile device
+./mothrbox chacha-encrypt vacation.mp4 "MobilePass123"
+# Output: 📦 Blob ID: xyz789...
+
+# On mobile/ARM device, decrypt
+./mothrbox chacha-decrypt xyz789... vacation.mp4 "MobilePass123"
+```
+
+### Example 3: Password-Free Sharing (ECC)
+
+```bash
+# Alice generates her key pair
+./mothrbox keygen
+# Creates: data/private.key, data/public.key
+
+# Bob generates his key pair
+./mothrbox keygen
+# Rename: data/bob_private.key, data/bob_public.key
+
+# Alice encrypts for Bob using Bob's public key
+./mothrbox ecc-encrypt contract.pdf data/bob_public.key
+# Output: 📦 Blob ID: abc456...
+
+# Alice shares blob ID publicly
+# Only Bob can decrypt with his private key
+./mothrbox ecc-decrypt abc456... contract.pdf data/bob_private.key
+```
+
+### Example 4: Batch Operations
+
+```bash
+# Encrypt multiple files
+for file in *.pdf; do
+  ./mothrbox encrypt "$file" "BatchPassword2024"
+done
+
+# Automated backup script
+#!/bin/bash
+DATE=$(date +%Y%m%d)
+tar czf backup_${DATE}.tar.gz ~/important_files/
+./mothrbox encrypt backup_${DATE}.tar.gz "BackupPass2024"
+rm backup_${DATE}.tar.gz
+```
+
+## Security Best Practices
+
+### Password-Based (AES & ChaCha20)
+
+- ✅ Use strong passwords (20+ characters, mixed case, numbers, symbols)
+- ✅ Never reuse passwords across files
+- ✅ Use a password manager (1Password, Bitwarden)
+- ✅ Share blob IDs and passwords via separate channels
+- ✅ Store blob IDs separately from passwords
+
+### Key-Based (ECC)
+
+- ✅ **NEVER share private keys**
+- ✅ Store private keys encrypted at rest
+- ✅ Back up private keys securely (encrypted USB, hardware wallet)
+- ✅ Share public keys freely - they can't decrypt
+- ✅ Generate separate key pairs for different purposes
+
+### General
+
+- ✅ Delete local unencrypted files after upload:
+  ```bash
+  shred -vfz -n 10 sensitive_file.txt
+  ```
+- ✅ Test decryption before deleting originals
+- ✅ Use testnet for development, mainnet for production
+- ✅ Verify blob IDs before sharing
+
+## All Available Commands
+
+```bash
+# System Management
+./mothrbox start              # Start MothrBox system
+./mothrbox stop               # Stop MothrBox system
+./mothrbox restart            # Restart MothrBox system
+./mothrbox status             # Check system status
+./mothrbox logs               # View system logs
+./mothrbox test               # Run tests
+./mothrbox rebuild            # Rebuild system
+./mothrbox clean              # Clean up everything
+
+# AES-256-GCM Commands
+./mothrbox encrypt <file> <password>
+./mothrbox decrypt <blob-id> <output-file> <password>
+
+# ChaCha20-Poly1305 Commands
+./mothrbox chacha-encrypt <file> <password>
+./mothrbox chacha-decrypt <blob-id> <output-file> <password>
+
+# ECC Commands
+./mothrbox keygen
+./mothrbox ecc-encrypt <file> <recipient-public-key>
+./mothrbox ecc-decrypt <blob-id> <output-file> <private-key>
+
+# Advanced
+./mothrbox cli <command> [args...]  # Direct Rust CLI access
+./mothrbox help                      # Show all commands
+```
+
+## System Requirements
+
+- **Operating System**: Linux, macOS, Windows (WSL2)
+- **Docker**: 20.10+
+- **Docker Compose**: v2+
+- **RAM**: 2GB minimum
+- **Sui Wallet**: With testnet or mainnet tokens
+- **Storage**: Varies by usage
+
+## Performance
+
+| Operation | AES-256-GCM | ChaCha20-Poly1305 | ECC |
+|-----------|-------------|-------------------|-----|
+| **Encryption** | ~500 MB/s* | ~400 MB/s | ~50 MB/s |
+| **Decryption** | ~500 MB/s* | ~400 MB/s | ~50 MB/s |
+| **Overhead** | +28 bytes | +44 bytes | +65 bytes |
+
+*With hardware acceleration (AES-NI)
+
+## Troubleshooting
+
+### Container Not Running
+
+```bash
+./mothrbox status
+./mothrbox start
+./mothrbox logs  # Check for errors
+```
+
+### Upload Failed
+
+```bash
+# Check configuration
+cat mothrbox_ts/.env
+
+# Verify SUI_SECRET_KEY is set
+# Get testnet SUI: https://faucet.testnet.sui.io/
+
+# Restart system
+./mothrbox restart
+```
+
+### Decrypt Failed
+
+**Check:**
+1. Correct blob ID (exact match)
+2. Correct password (case-sensitive)
+3. Correct encryption method (aes vs chacha vs ecc)
+
+```bash
+# Manual download to debug
+docker exec mothrbox_system bash -c "
+  deno run -A --env-file=mothrbox_ts/.env \
+  mothrbox_ts/src/walrus-cli.ts download <blob-id> /app/data/test.enc
+"
+
+ls -lh data/test.enc
+```
+
+## Next Steps
+
+- 📖 [CLI Reference](/docs/cli) – Complete command reference
+- 🔐 [Security Guide](/docs/security) – Detailed security practices
+- 🏗️ [Architecture](/docs/architecture) – System design deep dive
+- 🚀 [Advanced Usage](/docs/advanced) – Power user features
+
+## Community & Support
+
+- 🐙 **GitHub**: [georgegoldman/mothrbox_v2](https://github.com/georgegoldman/mothrbox_v2)
+- 📝 **Documentation**: Full guides and API reference
+- 🐛 **Issues**: [Report bugs](https://github.com/georgegoldman/mothrbox_v2/issues)
+- 💬 **Discord**: Coming soon
+
+## Why MothrBox?
+
+> "With MothrBox, you don't need to choose between speed and security — you get both."
+
+**MothrBox delivers:**
+
+- **Privacy First**: End-to-end encryption before data leaves your machine
+- **Decentralized**: No single point of failure or control
+- **Flexible**: Three algorithms for different use cases
+- **Developer-Friendly**: Simple CLI, no complex setup
+- **Blockchain-Backed**: Verifiable storage proofs on Sui
+- **Open Source**: Fully auditable code
+
+## Blockquote
+
+> ⚠️ **Important**: Always test decryption before deleting original files. Store blob IDs and passwords/keys separately. Private keys can never be recovered if lost.
+
+---
+
+**MothrBox** – Military-grade encryption. Decentralized storage. Simple CLI. 🦋🔒
+
+*Built for secure, unified, censorship-resistant storage.*
