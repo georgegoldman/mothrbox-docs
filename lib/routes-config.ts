@@ -40,17 +40,17 @@ export const ROUTES: EachRoute[] = [
     href: "/concepts",
     noLink: true,
     items: [
-      {title: "🔐 Authentication", href: "/authentication"},
+      // {title: "🔐 Authentication", href: "/authentication"},
       {title: "📂 Storage Modes", href: "/storage-modes"},
     ]
   },
-  {
-    title: "Reference", href: "/reference",
-    noLink: true,
-    items: [
-      {title: "📚 API Reference", href:"/api-reference"}
-    ]
-  },
+  // {
+  //   title: "Reference", href: "/reference",
+  //   noLink: true,
+  //   items: [
+  //     {title: "📚 API Reference", href:"/api-reference"}
+  //   ]
+  // },
   {
     title: "Use Cases",
     href: "/use-cases",

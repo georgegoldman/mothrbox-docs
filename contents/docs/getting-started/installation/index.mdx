@@ -1,32 +1,391 @@
 ---
 title: Installation
-description: How to get started with Mothrbox.
+description: How to install and configure MothrBox CLI for encrypted decentralized storage.
 ---
 
 ## Installation
 
-There’s nothing to install — Mothrbox is a cloud-native service with a RESTful API. Just set up your account and you’re ready to store encrypted or plain data.
+MothrBox is a self-hosted CLI tool that runs locally on your machine. Get up and running in just a few minutes with Docker and Docker Compose.
 
-### Step 1: Create a Mothrbox Account
+## Prerequisites
 
-Go to [mothrbox](https://mothrbox-frontend.vercel.app/) and sign up. This gives you access to the dashboard and key management.
+Before installing MothrBox, ensure you have:
 
-### Step 2: Generate an API Key
+- **Docker** (v20.10 or higher)
+- **Docker Compose** (v2 or higher)
+- **Git** (for cloning the repository)
+- **Sui Wallet** with testnet or mainnet tokens
 
-In your dashboard, generate a new API key. This will be used to authenticate every request to Mothrbox.
+### Install Docker
 
-> ⚠️ Keep your API key secret — treat it like a password.
+<Tabs>
+  <Tab title="Linux">
+    ```bash
+    # Ubuntu/Debian
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo usermod -aG docker $USER
+    
+    # Log out and back in for group changes to take effect
+    ```
+  </Tab>
+  
+  <Tab title="macOS">
+    ```bash
+    # Using Homebrew
+    brew install --cask docker
+    
+    # Or download Docker Desktop from:
+    # https://www.docker.com/products/docker-desktop
+    ```
+  </Tab>
+  
+  <Tab title="Windows">
+    ```bash
+    # Install Docker Desktop with WSL2 backend
+    # Download from: https://www.docker.com/products/docker-desktop
+    
+    # Enable WSL2:
+    wsl --install
+    wsl --set-default-version 2
+    ```
+  </Tab>
+</Tabs>
 
-### Step 3: Start Making API Calls
+### Get a Sui Wallet
 
-Use `curl`, Postman, or your backend service to start storing or retrieving files via the Mothrbox API.
+You'll need a Sui wallet with tokens for storing data on Walrus Protocol:
+
+**For Testnet (Recommended for development):**
+1. Install Sui CLI: `cargo install --locked --git https://github.com/MystenLabs/sui.git sui`
+2. Create wallet: `sui client new-address ed25519`
+3. Get testnet tokens: [https://faucet.testnet.sui.io/](https://faucet.testnet.sui.io/)
+
+**For Mainnet:**
+- Use [Sui Wallet](https://chrome.google.com/webstore/detail/sui-wallet) browser extension
+- Purchase SUI tokens from exchanges
+
+## Installation Steps
+
+### Step 1: Clone the Repository
 
 ```bash
-curl -X POST https://api.mothrbox.io/v1/storage/encrypted \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"filename":"model.bin", "data":"base64-encoded-data"}'
+git clone https://github.com/georgegoldman/mothrbox_v2
+cd mothrbox_v2
 ```
 
-> 💡 SDKs for Rust, JS, and Python are on the way. This page will be updated as soon as they’re available.
+### Step 2: Make CLI Executable
 
+```bash
+chmod +x mothrbox
+```
+
+### Step 3: Configure Your Sui Wallet
+
+```bash
+# Navigate to TypeScript client directory
+cd mothrbox_ts
+
+# Copy environment template
+cp .env.example .env
+
+# Edit configuration
+nano .env
+```
+
+Add your Sui wallet credentials to `.env`:
+
+```bash
+# Required - Your Sui wallet private key
+SUI_SECRET_KEY=suiprivkey1qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Network (testnet or mainnet)
+SUI_NETWORK=testnet
+
+# Optional - Walrus endpoints (defaults provided)
+WALRUS_PUBLISHER=https://publisher.walrus-testnet.walrus.space
+WALRUS_AGGREGATOR=https://aggregator.walrus-testnet.walrus.space
+```
+
+> ⚠️ **Security**: Never commit your `.env` file or share your `SUI_SECRET_KEY`. Treat it like a password.
+
+### Step 4: Build MothrBox
+
+```bash
+# Return to project root
+cd ..
+
+# Build Docker images
+./mothrbox rebuild
+```
+
+This process may take a few minutes as it:
+- Builds the Rust encryption engine
+- Sets up the Deno Walrus client
+- Configures the Docker container
+
+### Step 5: Start MothrBox
+
+```bash
+./mothrbox start
+```
+
+Expected output:
+```
+ℹ Starting MothrBox system...
+ℹ Starting Walrus server...
+ℹ Waiting for server to be ready...
+✅ MothrBox server is running!
+✅ Server URL: http://localhost:8000
+```
+
+### Step 6: Verify Installation
+
+```bash
+# Check status
+./mothrbox status
+
+# Run tests
+./mothrbox test
+```
+
+If everything is working, you should see:
+```
+✅ Container: Running
+✅ Ready to encrypt/decrypt
+```
+
+## Quick Test
+
+Let's verify all three encryption methods work:
+
+```bash
+# Create a test file
+echo "MothrBox test data" > test.txt
+
+# Test AES-256-GCM
+./mothrbox encrypt test.txt "TestPass123"
+# Save the blob ID, then:
+./mothrbox decrypt <blob-id> aes_recovered.txt "TestPass123"
+
+# Test ChaCha20-Poly1305
+./mothrbox chacha-encrypt test.txt "TestPass123"
+./mothrbox chacha-decrypt <blob-id> chacha_recovered.txt "TestPass123"
+
+# Test ECC
+./mothrbox keygen
+./mothrbox ecc-encrypt test.txt data/public.key
+./mothrbox ecc-decrypt <blob-id> ecc_recovered.txt data/private.key
+
+# Verify all worked
+diff test.txt data/aes_recovered.txt && echo "✅ AES works"
+diff test.txt data/chacha_recovered.txt && echo "✅ ChaCha20 works"
+diff test.txt data/ecc_recovered.txt && echo "✅ ECC works"
+```
+
+## Directory Structure
+
+After installation, your project structure looks like this:
+
+```
+mothrbox_v2/
+├── mothrbox              # Main CLI script
+├── data/                 # Your encrypted/decrypted files
+├── mothrbox_rs/          # Rust encryption engine
+├── mothrbox_ts/          # Deno Walrus client
+│   └── .env             # Your configuration (keep secret!)
+├── docker-compose.yml    # Docker configuration
+└── Dockerfile           # Container image definition
+```
+
+## Updating MothrBox
+
+To update to the latest version:
+
+```bash
+# Stop current instance
+./mothrbox stop
+
+# Pull latest changes
+git pull origin main
+
+# Rebuild
+./mothrbox rebuild
+
+# Restart
+./mothrbox start
+```
+
+## Troubleshooting
+
+### Issue: Docker Not Found
+
+```bash
+# Verify Docker is installed
+docker --version
+docker compose version
+
+# If not installed, see Prerequisites section above
+```
+
+### Issue: Permission Denied
+
+```bash
+# Make script executable
+chmod +x mothrbox
+
+# Fix data directory permissions
+sudo chown -R $USER:$USER data/
+chmod -R 755 data/
+```
+
+### Issue: Container Won't Start
+
+```bash
+# Check Docker logs
+./mothrbox logs
+
+# Common fixes:
+# 1. Check if port 8000 is already in use
+sudo lsof -i :8000
+
+# 2. Restart Docker service
+sudo systemctl restart docker  # Linux
+# or restart Docker Desktop on macOS/Windows
+
+# 3. Clean rebuild
+./mothrbox clean
+./mothrbox rebuild
+./mothrbox start
+```
+
+### Issue: Missing SUI_SECRET_KEY
+
+```bash
+# Check your .env file
+cat mothrbox_ts/.env
+
+# Should contain:
+# SUI_SECRET_KEY=suiprivkey1...
+# SUI_NETWORK=testnet
+
+# If missing, reconfigure:
+cd mothrbox_ts
+cp .env.example .env
+nano .env
+```
+
+### Issue: Upload Fails (Insufficient SUI)
+
+```bash
+# For testnet, get free tokens:
+# Visit: https://faucet.testnet.sui.io/
+# Enter your wallet address
+
+# Check your balance
+sui client balance
+
+# For mainnet, purchase SUI tokens from exchanges
+```
+
+### Issue: Build Fails
+
+```bash
+# Clean everything and rebuild
+./mothrbox clean
+docker system prune -a  # Remove all unused Docker data
+./mothrbox rebuild
+
+# If still failing, check:
+# 1. Docker has enough disk space (5GB+ recommended)
+# 2. Internet connection is stable
+# 3. Docker daemon is running
+```
+
+## Uninstallation
+
+To completely remove MothrBox:
+
+```bash
+# Stop and remove containers
+./mothrbox stop
+
+# Remove all data and images
+./mothrbox clean
+
+# Remove repository
+cd ..
+rm -rf mothrbox_v2
+
+# (Optional) Remove Docker images
+docker rmi mothrbox_v2-mothrbox
+```
+
+## System Requirements
+
+### Minimum Requirements
+- **OS**: Linux, macOS, Windows (with WSL2)
+- **CPU**: 2 cores
+- **RAM**: 2GB
+- **Disk**: 5GB free space
+- **Network**: Stable internet connection
+
+### Recommended Requirements
+- **CPU**: 4+ cores
+- **RAM**: 4GB+
+- **Disk**: 10GB+ free space
+- **Network**: High-speed connection for large file uploads
+
+## Network Configuration
+
+MothrBox connects to:
+- **Walrus Protocol** (testnet/mainnet) - Decentralized storage
+- **Sui Blockchain** (testnet/mainnet) - Storage proofs and metadata
+
+Ensure your firewall allows outbound connections to:
+- `publisher.walrus-testnet.walrus.space` (or mainnet equivalent)
+- `aggregator.walrus-testnet.walrus.space` (or mainnet equivalent)
+- `fullnode.testnet.sui.io` (or mainnet equivalent)
+
+## Next Steps
+
+Now that MothrBox is installed:
+
+1. 📖 **Read the [CLI Reference](/docs/cli)** - Learn all available commands
+2. 🔐 **Review [Security Best Practices](/docs/security)** - Protect your data properly
+3. 🚀 **Try [Advanced Usage](/docs/advanced)** - Batch operations, automation
+4. 🏗️ **Understand the [Architecture](/docs/architecture)** - How it all works
+
+## Getting Help
+
+If you encounter issues not covered here:
+
+- 🐙 **GitHub Issues**: [Report a bug](https://github.com/georgegoldman/mothrbox_v2/issues)
+- 📖 **Documentation**: Check other docs pages
+- 💬 **Community**: Join our Discord (coming soon)
+
+## Environment Variables Reference
+
+Complete `.env` configuration options:
+
+```bash
+# Required
+SUI_SECRET_KEY=suiprivkey1...           # Your Sui wallet private key
+SUI_NETWORK=testnet                     # Network: testnet or mainnet
+
+# Optional - Walrus Endpoints
+WALRUS_PUBLISHER=https://publisher.walrus-testnet.walrus.space
+WALRUS_AGGREGATOR=https://aggregator.walrus-testnet.walrus.space
+
+# Optional - Storage Configuration
+WALRUS_EPOCHS=3                         # Storage duration (epochs)
+
+# Optional - Advanced
+LOG_LEVEL=info                          # Log verbosity: debug, info, warn, error
+```
+
+---
+
+> 💡 **Pro Tip**: After installation, bookmark the [Quick Reference](/docs/quick-reference) for fast command lookups.
+
+**You're all set!** MothrBox is now ready to encrypt and store your data securely. 🦋🔒

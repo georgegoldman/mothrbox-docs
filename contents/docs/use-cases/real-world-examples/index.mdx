@@ -1,9 +1,701 @@
-# 💡 Use Cases
-## 🔐 Token-Gated Content
-Only token holders can decrypt or access certain content.
-## 🧠 Off-Chain Embedding Storage
-Store AI model weights or embeddings encrypted.
-## 🧾 Encrypted Billing or Receipts
-Securely store user financial records.
-## 🧬 Privacy-First Health Docs
-Upload and retrieve patient documents securely.
+---
+title: Real-World Examples
+description: Practical use cases and implementation examples for MothrBox encrypted decentralized storage.
+---
+
+# 💡 Real-World Use Cases
+
+Discover how MothrBox solves real-world problems across different industries and scenarios. Each example includes working code you can adapt for your needs.
+
+---
+
+## 🏢 Enterprise & Business
+
+### Legal Firm: Secure Client Document Sharing
+
+**Scenario:** Law firm needs to share confidential contracts with clients without exposing documents via email.
+
+**Solution:** Use ECC encryption for password-free sharing.
+
+```bash
+# Lawyer's workflow
+cd mothrbox_v2
+./mothrbox start
+
+# Generate keys for each client (one-time)
+./mothrbox keygen
+mv data/private.key data/client_john_private.key
+mv data/public.key data/client_john_public.key
+
+# Encrypt contract using client's public key
+./mothrbox ecc-encrypt client_contract_2024.pdf data/client_john_public.key
+# Output: Blob ID: legal_abc123...
+
+# Share blob ID via email (public channel - safe!)
+# Client decrypts with their private key
+./mothrbox ecc-decrypt legal_abc123... contract.pdf data/client_john_private.key
+```
+
+**Benefits:**
+- ✅ No password to share (eliminates phone call)
+- ✅ Email trail for compliance
+- ✅ Client controls their own private key
+- ✅ Decentralized storage (no single point of failure)
+
+---
+
+### Corporate: Quarterly Financial Reports
+
+**Scenario:** CFO needs to securely distribute quarterly reports to board members.
+
+```bash
+#!/bin/bash
+# encrypt_for_board.sh
+
+./mothrbox start
+
+REPORT="Q4_2024_Financial_Report.pdf"
+
+# Encrypt for each board member using their public keys
+./mothrbox ecc-encrypt "$REPORT" keys/ceo_public.key
+CEO_BLOB=$(# save blob ID)
+
+./mothrbox ecc-encrypt "$REPORT" keys/cfo_public.key
+CFO_BLOB=$(# save blob ID)
+
+./mothrbox ecc-encrypt "$REPORT" keys/board_chair_public.key
+CHAIR_BLOB=$(# save blob ID)
+
+# Send personalized emails with respective blob IDs
+echo "CEO Blob ID: $CEO_BLOB"
+echo "CFO Blob ID: $CFO_BLOB"
+echo "Chair Blob ID: $CHAIR_BLOB"
+
+# Each recipient decrypts with their private key
+# No password sharing needed!
+```
+
+**Benefits:**
+- ✅ Individual decryption (each has unique key)
+- ✅ Audit trail (who accessed what)
+- ✅ Revocable access (don't encrypt for them next time)
+- ✅ Compliance-friendly
+
+---
+
+### Compliance: HIPAA Healthcare Records
+
+**Scenario:** Medical practice needs HIPAA-compliant patient record storage.
+
+```bash
+# encrypt_patient_record.sh
+#!/bin/bash
+
+PATIENT_ID="$1"
+RECORD_FILE="$2"
+PASSWORD="$HIPAA_ENCRYPTION_KEY"  # From secure env var
+
+# Use AES-256-GCM (NIST/FIPS compliant)
+./mothrbox encrypt "$RECORD_FILE" "$PASSWORD"
+BLOB_ID=$(# capture from output)
+
+# Log to secure database
+echo "INSERT INTO patient_records (patient_id, blob_id, encrypted_at) 
+      VALUES ('$PATIENT_ID', '$BLOB_ID', NOW());" | psql $DB_URL
+
+# Securely delete original
+shred -vfz -n 10 "$RECORD_FILE"
+
+echo "✅ Patient record encrypted and stored securely"
+echo "Blob ID: $BLOB_ID"
+```
+
+**Benefits:**
+- ✅ HIPAA-compliant encryption (AES-256-GCM)
+- ✅ End-to-end encryption
+- ✅ Decentralized storage (no single point of failure)
+- ✅ Blockchain audit trail
+
+---
+
+## 📱 Mobile & IoT
+
+### Mobile App: Encrypted Photo Backup
+
+**Scenario:** Mobile app needs to backup user photos securely to the cloud.
+
+```bash
+# mobile_backup.sh
+#!/bin/bash
+
+# Compress photos
+tar czf "photos_$(date +%Y%m%d).tar.gz" ~/Photos/
+
+# Use ChaCha20 (optimized for mobile ARM)
+./mothrbox chacha-encrypt "photos_$(date +%Y%m%d).tar.gz" "$USER_PASSWORD"
+BLOB_ID=$(# capture blob ID)
+
+# Save blob ID to user's account database
+curl -X POST https://api.myapp.com/backup \
+  -H "Authorization: Bearer $USER_TOKEN" \
+  -d "{\"blob_id\": \"$BLOB_ID\", \"date\": \"$(date +%Y%m%d)\"}"
+
+# Clean up
+rm "photos_$(date +%Y%m%d).tar.gz"
+
+echo "✅ Photos backed up securely"
+```
+
+**Benefits:**
+- ✅ ChaCha20 optimized for mobile processors
+- ✅ User controls encryption password
+- ✅ Decentralized storage (censorship-resistant)
+- ✅ No monthly subscription fees
+
+---
+
+### IoT: Sensor Data Encryption
+
+**Scenario:** IoT devices (Raspberry Pi) uploading encrypted sensor readings.
+
+```bash
+# iot_sensor_upload.sh
+#!/bin/bash
+
+# Collect sensor data
+SENSOR_DATA=$(cat /dev/sensor_data)
+echo "$SENSOR_DATA" > "/tmp/sensor_$(date +%s).json"
+
+# Use ChaCha20 (no AES hardware on Raspberry Pi)
+./mothrbox chacha-encrypt "/tmp/sensor_$(date +%s).json" "$IOT_DEVICE_KEY"
+BLOB_ID=$(# capture blob ID)
+
+# Report to central system
+mosquitto_pub -t "sensor/data" -m "{\"device_id\": \"$DEVICE_ID\", \"blob_id\": \"$BLOB_ID\"}"
+
+# Clean up
+rm "/tmp/sensor_$(date +%s).json"
+```
+
+**Benefits:**
+- ✅ Secure data transmission
+- ✅ Efficient on ARM processors
+- ✅ Decentralized storage
+- ✅ Low bandwidth usage
+
+---
+
+## 🔐 Privacy & Security
+
+### Whistleblower Protection
+
+**Scenario:** Journalist protecting whistleblower documents from censorship.
+
+```bash
+# protect_documents.sh
+#!/bin/bash
+
+DOCUMENTS="leaked_documents_2024.zip"
+PASSWORD=$(openssl rand -base64 32)  # Generate strong random password
+
+# Encrypt immediately
+./mothrbox encrypt "$DOCUMENTS" "$PASSWORD"
+BLOB_ID=$(# capture blob ID)
+
+# Store password in encrypted form
+echo "$PASSWORD" | gpg --encrypt --recipient journalist@secure.org > password.gpg
+
+# Delete original immediately (use shred for security)
+shred -vfz -n 10 "$DOCUMENTS"
+
+echo "✅ Documents encrypted and original destroyed"
+echo "Blob ID: $BLOB_ID"
+echo "Password stored in password.gpg (encrypted)"
+
+# Documents now safe from:
+# - Government seizure
+# - Corporate takedown requests
+# - Data center raids
+# - Censorship attempts
+```
+
+**Benefits:**
+- ✅ Censorship-resistant (decentralized storage)
+- ✅ No central server to subpoena
+- ✅ Blockchain proof of existence
+- ✅ Distributed across multiple nodes
+
+---
+
+### Password Manager Backup
+
+**Scenario:** Backing up password manager database securely.
+
+```bash
+# backup_passwords.sh
+#!/bin/bash
+
+DATE=$(date +%Y%m%d)
+MASTER_PASSWORD="$1"
+
+# Export password database
+cp ~/.password-store/passwords.kdbx "/tmp/passwords_backup_${DATE}.kdbx"
+
+# Encrypt with AES-256-GCM
+./mothrbox encrypt "/tmp/passwords_backup_${DATE}.kdbx" "$MASTER_PASSWORD"
+BLOB_ID=$(# capture blob ID)
+
+# Store blob ID in a separate secure location
+echo "${DATE},${BLOB_ID}" >> ~/.password-backups.csv
+
+# Securely delete temporary file
+shred -vfz -n 10 "/tmp/passwords_backup_${DATE}.kdbx"
+
+echo "✅ Password database backed up securely"
+echo "Retrieve with: ./mothrbox decrypt $BLOB_ID recovered.kdbx"
+```
+
+---
+
+## 🤖 AI & Machine Learning
+
+### Off-Chain AI Model Storage
+
+**Scenario:** Storing large AI model weights off-chain for Web3 AI apps.
+
+```bash
+# store_model.sh
+#!/bin/bash
+
+MODEL_FILE="bert_fine_tuned_v1.bin"
+MODEL_KEY=$(openssl rand -base64 32)
+
+# Compress model first
+tar czf "${MODEL_FILE}.tar.gz" "$MODEL_FILE"
+
+# Encrypt and upload
+./mothrbox encrypt "${MODEL_FILE}.tar.gz" "$MODEL_KEY"
+BLOB_ID=$(# capture blob ID)
+
+# Store metadata on-chain (Sui smart contract)
+sui client call \
+  --package $PACKAGE_ID \
+  --module ai_models \
+  --function register_model \
+  --args "$BLOB_ID" "$MODEL_KEY" "BERT Fine-tuned v1"
+
+echo "✅ Model stored off-chain, metadata on-chain"
+echo "Blob ID: $BLOB_ID"
+```
+
+**Benefits:**
+- ✅ Cheap storage (vs on-chain)
+- ✅ Large files supported
+- ✅ Verifiable via blockchain
+- ✅ Decentralized hosting
+
+---
+
+### Vector Database Backup
+
+**Scenario:** Backing up embeddings from vector database.
+
+```bash
+# backup_embeddings.sh
+#!/bin/bash
+
+# Export embeddings from Pinecone/Weaviate
+curl -X GET https://api.pinecone.io/vectors/export > embeddings.json
+
+# Encrypt backup
+./mothrbox encrypt embeddings.json "$EMBEDDINGS_BACKUP_KEY"
+BLOB_ID=$(# capture blob ID)
+
+# Store blob ID with timestamp
+echo "$(date -Iseconds),$BLOB_ID" >> embeddings_backups.log
+
+# Clean up
+rm embeddings.json
+
+echo "✅ Embeddings backed up: $BLOB_ID"
+```
+
+---
+
+## 🎓 Academic & Research
+
+### Research Data Publication
+
+**Scenario:** Researchers publishing dataset with paper while maintaining privacy.
+
+```bash
+# publish_research_data.sh
+#!/bin/bash
+
+DATASET="climate_study_2024.tar.gz"
+ACCESS_PASSWORD="ResearchAccess2024"
+
+# Encrypt dataset
+./mothrbox encrypt "$DATASET" "$ACCESS_PASSWORD"
+BLOB_ID=$(# capture blob ID)
+
+# Include blob ID in published paper
+cat > paper_appendix.tex << EOF
+\section{Data Availability}
+The complete dataset is available at:
+\\texttt{Blob ID: $BLOB_ID}
+
+Researchers can access the data using the MothrBox CLI:
+\\begin{verbatim}
+./mothrbox decrypt $BLOB_ID dataset.tar.gz
+\\end{verbatim}
+
+Access password available upon request to: researcher@university.edu
+\EOF
+
+echo "✅ Dataset published with verifiable storage"
+```
+
+**Benefits:**
+- ✅ Verifiable data availability
+- ✅ Decentralized hosting (永久 preservation)
+- ✅ Access control via password
+- ✅ Blockchain proof of publication date
+
+---
+
+## 💼 Personal Use Cases
+
+### Personal Document Vault
+
+**Scenario:** Individual storing important documents securely.
+
+```bash
+#!/bin/bash
+# personal_vault.sh
+
+VAULT_PASSWORD="$1"
+
+# Documents to protect
+DOCS=(
+  "passport_scan.pdf"
+  "birth_certificate.pdf"
+  "marriage_license.pdf"
+  "property_deed.pdf"
+  "insurance_policies.pdf"
+)
+
+echo "Starting personal document vault backup..."
+
+for doc in "${DOCS[@]}"; do
+  if [ -f "$doc" ]; then
+    echo "Encrypting: $doc"
+    ./mothrbox encrypt "$doc" "$VAULT_PASSWORD"
+    BLOB_ID=$(# capture from output)
+    echo "$(date),$doc,$BLOB_ID" >> vault_registry.csv
+    
+    # Securely delete original
+    shred -vfz -n 10 "$doc"
+  fi
+done
+
+echo "✅ Personal vault created"
+echo "Registry saved to: vault_registry.csv"
+echo "Keep this file safe!"
+```
+
+---
+
+### Family Photo Archive
+
+**Scenario:** Long-term family photo preservation.
+
+```bash
+# archive_family_photos.sh
+#!/bin/bash
+
+YEAR="$1"
+ARCHIVE_PASSWORD="FamilyArchive$YEAR"
+
+# Organize by year
+tar czf "family_photos_${YEAR}.tar.gz" ~/Photos/${YEAR}/
+
+# Encrypt for long-term storage
+./mothrbox encrypt "family_photos_${YEAR}.tar.gz" "$ARCHIVE_PASSWORD"
+BLOB_ID=$(# capture blob ID)
+
+# Create recovery document
+cat > "RECOVERY_INSTRUCTIONS_${YEAR}.txt" << EOF
+Family Photo Archive Recovery Instructions
+==========================================
+Year: $YEAR
+Blob ID: $BLOB_ID
+Password: $ARCHIVE_PASSWORD
+
+To recover photos:
+1. Install MothrBox: github.com/georgegoldman/mothrbox_v2
+2. Run: ./mothrbox decrypt $BLOB_ID photos.tar.gz "$ARCHIVE_PASSWORD"
+3. Extract: tar xzf photos.tar.gz
+
+Store this document in a safe place!
+Last updated: $(date)
+EOF
+
+# Clean up
+rm "family_photos_${YEAR}.tar.gz"
+
+echo "✅ Family photos archived for $YEAR"
+echo "Recovery instructions: RECOVERY_INSTRUCTIONS_${YEAR}.txt"
+```
+
+---
+
+## 🌐 Web3 & DeFi
+
+### Token-Gated Content
+
+**Scenario:** NFT holders get access to exclusive encrypted content.
+
+```bash
+# create_token_gated_content.sh
+#!/bin/bash
+
+CONTENT="exclusive_content.pdf"
+NFT_COLLECTION="0x..."
+
+# Generate unique key for this content
+CONTENT_KEY=$(openssl rand -base64 32)
+
+# Encrypt content
+./mothrbox encrypt "$CONTENT" "$CONTENT_KEY"
+BLOB_ID=$(# capture blob ID)
+
+# Store on-chain (Sui smart contract)
+sui client call \
+  --package $PACKAGE_ID \
+  --module token_gate \
+  --function set_content \
+  --args "$NFT_COLLECTION" "$BLOB_ID" "$CONTENT_KEY"
+
+echo "✅ Content encrypted and token-gated"
+echo "Only holders of $NFT_COLLECTION can decrypt"
+```
+
+**Access verification:**
+```bash
+# User with NFT accesses content
+sui client call \
+  --package $PACKAGE_ID \
+  --module token_gate \
+  --function get_content_key \
+  --args "$USER_ADDRESS" "$NFT_COLLECTION"
+# Returns: CONTENT_KEY if user holds NFT
+
+# User decrypts
+./mothrbox decrypt $BLOB_ID content.pdf "$CONTENT_KEY"
+```
+
+---
+
+### DeFi: Encrypted Invoice Storage
+
+**Scenario:** DeFi protocol storing encrypted invoices for on-chain payments.
+
+```bash
+# store_invoice.sh
+#!/bin/bash
+
+INVOICE_ID="$1"
+INVOICE_FILE="invoice_${INVOICE_ID}.pdf"
+MERCHANT_PUBLIC_KEY="$2"
+
+# Encrypt invoice for merchant
+./mothrbox ecc-encrypt "$INVOICE_FILE" "$MERCHANT_PUBLIC_KEY"
+BLOB_ID=$(# capture blob ID)
+
+# Store on-chain reference
+sui client call \
+  --package $PACKAGE_ID \
+  --module invoicing \
+  --function create_invoice \
+  --args "$INVOICE_ID" "$BLOB_ID" "$MERCHANT_ADDRESS"
+
+echo "✅ Invoice stored and linked to on-chain payment"
+```
+
+---
+
+## 🔧 Developer Tools
+
+### Automated Testing Data
+
+**Scenario:** Storing test fixtures securely for CI/CD.
+
+```bash
+# .github/workflows/test.yml
+name: Tests with Encrypted Fixtures
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup MothrBox
+        run: |
+          git clone https://github.com/georgegoldman/mothrbox_v2
+          cd mothrbox_v2
+          ./mothrbox rebuild
+          ./mothrbox start
+      
+      - name: Download test fixtures
+        run: |
+          ./mothrbox decrypt ${{ secrets.TEST_FIXTURES_BLOB }} fixtures.tar.gz "${{ secrets.FIXTURES_PASSWORD }}"
+          tar xzf fixtures.tar.gz
+      
+      - name: Run tests
+        run: npm test
+```
+
+---
+
+### Configuration Backup
+
+**Scenario:** Backing up critical infrastructure configs.
+
+```bash
+# backup_configs.sh
+#!/bin/bash
+
+BACKUP_PASSWORD="$INFRA_BACKUP_KEY"
+DATE=$(date +%Y%m%d)
+
+# Collect all configs
+tar czf "infra_backup_${DATE}.tar.gz" \
+  /etc/nginx/nginx.conf \
+  /etc/kubernetes/admin.conf \
+  docker-compose.yml \
+  .env.production
+
+# Encrypt and upload
+./mothrbox encrypt "infra_backup_${DATE}.tar.gz" "$BACKUP_PASSWORD"
+BLOB_ID=$(# capture blob ID)
+
+# Store in secure inventory
+aws secretsmanager put-secret-value \
+  --secret-id infra-backups \
+  --secret-string "{\"date\": \"${DATE}\", \"blob_id\": \"${BLOB_ID}\"}"
+
+# Clean up
+rm "infra_backup_${DATE}.tar.gz"
+
+echo "✅ Infrastructure backed up: $BLOB_ID"
+```
+
+---
+
+## 📊 Analytics & Reporting
+
+### Encrypted Business Intelligence Reports
+
+**Scenario:** Distributing sensitive BI reports to stakeholders.
+
+```bash
+# distribute_bi_report.sh
+#!/bin/bash
+
+REPORT="monthly_analytics_$(date +%Y%m).pdf"
+
+# Encrypt for each department head
+./mothrbox ecc-encrypt "$REPORT" keys/sales_head_public.key
+SALES_BLOB=$(# capture blob ID)
+
+./mothrbox ecc-encrypt "$REPORT" keys/marketing_head_public.key  
+MARKETING_BLOB=$(# capture blob ID)
+
+./mothrbox ecc-encrypt "$REPORT" keys/product_head_public.key
+PRODUCT_BLOB=$(# capture blob ID)
+
+# Send automated emails
+send_email "sales@company.com" "Monthly Report" "Blob ID: $SALES_BLOB"
+send_email "marketing@company.com" "Monthly Report" "Blob ID: $MARKETING_BLOB"
+send_email "product@company.com" "Monthly Report" "Blob ID: $PRODUCT_BLOB"
+
+echo "✅ Reports distributed securely"
+```
+
+---
+
+## 🎬 Media & Content
+
+### Filmmaker: Raw Footage Backup
+
+**Scenario:** Filmmaker backing up raw footage to decentralized storage.
+
+```bash
+# backup_footage.sh
+#!/bin/bash
+
+PROJECT="$1"
+FOOTAGE_DIR="$2"
+
+# Create archive
+tar czf "${PROJECT}_footage.tar.gz" "$FOOTAGE_DIR"
+
+# Use ChaCha20 for large video files
+./mothrbox chacha-encrypt "${PROJECT}_footage.tar.gz" "$PROJECT_PASSWORD"
+BLOB_ID=$(# capture blob ID)
+
+# Log to project database
+echo "${PROJECT},$(date),$BLOB_ID" >> project_backups.csv
+
+# Clean up
+rm "${PROJECT}_footage.tar.gz"
+
+echo "✅ Footage backed up: $BLOB_ID"
+echo "Storage cost: ~$0.50 (vs cloud storage $20/month)"
+```
+
+---
+
+## 💡 Key Takeaways
+
+### Choose Your Encryption Method:
+
+**AES-256-GCM:**
+- General purpose
+- Desktop/server workloads
+- Compliance requirements
+
+**ChaCha20-Poly1305:**
+- Mobile devices
+- ARM processors
+- IoT applications
+
+**ECC P-256:**
+- Multi-recipient sharing
+- No password exchange needed
+- Token-gated content
+
+### Best Practices:
+
+1. **Always test decryption** before deleting originals
+2. **Store blob IDs** in secure registry
+3. **Use strong passwords** or secure key management
+4. **Separate channels** for blob IDs and passwords
+5. **Regular backups** of critical data
+6. **Document recovery** procedures
+
+---
+
+## Next Steps
+
+- 📖 [CLI Reference](/docs/cli) - Complete command guide
+- 🔐 [Security Best Practices](/docs/security) - Protect your data
+- 🚀 [Advanced Usage](/docs/advanced) - Automation and scripting
+
+---
+
+> 💡 **Have a use case we didn't cover?** [Open a GitHub issue](https://github.com/georgegoldman/mothrbox_v2/issues) and we'll add it! 🦋🔒

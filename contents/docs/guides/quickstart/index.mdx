@@ -1,19 +1,420 @@
+---
+title: Quickstart
+description: Get started with MothrBox in 5 minutes - encrypt, upload, and retrieve your first file.
+---
 
 # ⚡ Quickstart
 
-Here’s a minimal example to store an encrypted file.
-## Upload a File (Encrypted Mode)
+Get MothrBox running and encrypt your first file in under 5 minutes.
+
+## Prerequisites
+
+Before starting, ensure you have:
+- ✅ Completed [Installation](/docs/installation)
+- ✅ MothrBox running (`./mothrbox status` shows "Container: Running")
+- ✅ Sui wallet configured in `.env` file
+
+## Your First Encrypted File
+
+### Step 1: Start MothrBox
+
 ```bash
-curl -X POST https://api.mothrbox.io/v1/storage/encrypted \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "filename": "secret.txt",
-    "data": "VGhpcyBpcyBhIHNlY3JldCBmaWxlIQ=="
-  }'
-  ```
-  ## Retrieve a File
-  ```bash
-  curl -X GET https://api.mothrbox.io/v1/storage/:fileId \
-  -H "Authorization: Bearer YOUR_API_KEY"curl -X GET https://api.mothrbox.io/v1/storage/:fileId \
+./mothrbox start
 ```
+
+Expected output:
+```
+ℹ Starting MothrBox system...
+✅ MothrBox server is running!
+```
+
+### Step 2: Create a Test File
+
+```bash
+echo "This is my secret data!" > secret.txt
+```
+
+### Step 3: Encrypt and Upload (AES-256-GCM)
+
+```bash
+./mothrbox encrypt secret.txt "MySecurePassword123"
+```
+
+Output:
+```
+╔════════════════════════════════════════════════════════╗
+║                      MOTHRBOX                          ║
+║        Encrypted Decentralized Storage System         ║
+╚════════════════════════════════════════════════════════╝
+
+ℹ Encrypting and uploading with AES-256-GCM...
+📤 Uploading to Walrus...
+✅ Encrypted and uploaded successfully!
+
+📦 Encrypted Blob ID: DcNxScTcvltoCYZwLPVC45QNFpddxjL8FmueI7I7-Ho
+
+ℹ Save this Blob ID and password separately!
+```
+
+> 🔑 **Important**: Save the Blob ID! You need it to retrieve your file later.
+
+### Step 4: Download and Decrypt
+
+```bash
+./mothrbox decrypt DcNxScTcvltoCYZwLPVC45QNFpddxjL8FmueI7I7-Ho recovered.txt "MySecurePassword123"
+```
+
+Output:
+```
+╔════════════════════════════════════════════════════════╗
+║                      MOTHRBOX                          ║
+║        Encrypted Decentralized Storage System         ║
+╚════════════════════════════════════════════════════════╝
+
+ℹ Downloading and decrypting with AES-256-GCM...
+📥 Downloading from Walrus...
+✅ Downloaded 23 bytes
+✅ Decrypted successfully
+✅ Saved to: data/recovered.txt
+```
+
+### Step 5: Verify
+
+```bash
+cat data/recovered.txt
+# Output: This is my secret data!
+
+# Or compare with original
+diff secret.txt data/recovered.txt
+# No output = files are identical ✅
+```
+
+---
+
+## Try All Three Encryption Methods
+
+### Method 1: AES-256-GCM (Default)
+
+**Best for:** General purpose, hardware-accelerated
+
+```bash
+# Encrypt
+./mothrbox encrypt document.pdf "SecurePass123"
+# Save blob ID: abc123...
+
+# Decrypt
+./mothrbox decrypt abc123... document.pdf "SecurePass123"
+```
+
+### Method 2: ChaCha20-Poly1305 (Mobile-Optimized)
+
+**Best for:** Mobile devices, ARM processors
+
+```bash
+# Encrypt
+./mothrbox chacha-encrypt video.mp4 "MobilePass456"
+# Save blob ID: def456...
+
+# Decrypt
+./mothrbox chacha-decrypt def456... video.mp4 "MobilePass456"
+```
+
+### Method 3: ECC (Public Key Crypto)
+
+**Best for:** Sharing without password exchange
+
+```bash
+# Generate keys (one-time)
+./mothrbox keygen
+# Creates: data/private.key, data/public.key
+
+# Encrypt with public key (NO PASSWORD!)
+./mothrbox ecc-encrypt contract.pdf data/public.key
+# Save blob ID: ghi789...
+
+# Decrypt with private key
+./mothrbox ecc-decrypt ghi789... contract.pdf data/private.key
+```
+
+---
+
+## Real-World Examples
+
+### Example 1: Secure Document Backup
+
+```bash
+# Start MothrBox
+./mothrbox start
+
+# Backup important files
+./mothrbox encrypt ~/Documents/taxes_2024.pdf "TaxPass2024"
+./mothrbox encrypt ~/Documents/contract.pdf "ContractPass2024"
+./mothrbox encrypt ~/Documents/passport_scan.pdf "PassportPass2024"
+
+# Save blob IDs in a secure location (password manager)
+```
+
+### Example 2: Mobile Photo Backup
+
+```bash
+# Compress photos
+tar czf vacation_photos.tar.gz ~/Photos/Vacation2024/
+
+# Encrypt with ChaCha20 (faster on mobile)
+./mothrbox chacha-encrypt vacation_photos.tar.gz "PhotoBackup2024"
+
+# Clean up
+rm vacation_photos.tar.gz
+
+# Later on new phone: Download and decrypt
+./mothrbox chacha-decrypt <blob-id> photos.tar.gz "PhotoBackup2024"
+tar xzf data/photos.tar.gz
+```
+
+### Example 3: Secure File Sharing (No Password Exchange)
+
+```bash
+# Alice generates her keys
+./mothrbox keygen
+mv data/private.key data/alice_private.key
+mv data/public.key data/alice_public.key
+
+# Bob generates his keys
+./mothrbox keygen
+mv data/private.key data/bob_private.key
+mv data/public.key data/bob_public.key
+
+# Alice encrypts for Bob using Bob's public key
+./mothrbox ecc-encrypt confidential_report.pdf data/bob_public.key
+# Blob ID: xyz123...
+
+# Alice sends Bob the blob ID via email/Slack (public channel is fine!)
+
+# Bob downloads and decrypts with his private key
+./mothrbox ecc-decrypt xyz123... report.pdf data/bob_private.key
+```
+
+### Example 4: Automated Daily Backup
+
+Create `backup.sh`:
+
+```bash
+#!/bin/bash
+
+# Daily backup script
+DATE=$(date +%Y%m%d)
+PASSWORD="AutoBackup2024"
+
+# Start MothrBox if not running
+./mothrbox start
+
+# Create backup
+tar czf "/tmp/backup_${DATE}.tar.gz" ~/important_files/
+
+# Encrypt and upload
+RESULT=$(./mothrbox encrypt "/tmp/backup_${DATE}.tar.gz" "$PASSWORD")
+BLOB_ID=$(echo "$RESULT" | grep -oP 'Blob ID: \K\S+')
+
+# Log
+echo "${DATE},${BLOB_ID}" >> backup_log.csv
+
+# Cleanup
+rm "/tmp/backup_${DATE}.tar.gz"
+
+echo "✅ Backup complete: $BLOB_ID"
+```
+
+Run it:
+```bash
+chmod +x backup.sh
+./backup.sh
+
+# Schedule with cron
+crontab -e
+# Add: 0 2 * * * cd /path/to/mothrbox_v2 && ./backup.sh
+```
+
+---
+
+## Quick Command Reference
+
+```bash
+# System
+./mothrbox start              # Start MothrBox
+./mothrbox stop               # Stop MothrBox
+./mothrbox status             # Check status
+./mothrbox logs               # View logs
+
+# AES-256-GCM (Default)
+./mothrbox encrypt <file> <password>
+./mothrbox decrypt <blob-id> <output> <password>
+
+# ChaCha20-Poly1305 (Mobile)
+./mothrbox chacha-encrypt <file> <password>
+./mothrbox chacha-decrypt <blob-id> <output> <password>
+
+# ECC (Public Key)
+./mothrbox keygen
+./mothrbox ecc-encrypt <file> <public-key>
+./mothrbox ecc-decrypt <blob-id> <output> <private-key>
+
+# Help
+./mothrbox help               # Show all commands
+```
+
+---
+
+## Tips for Success
+
+### 1. Always Save Blob IDs
+```bash
+# Create a blob ID registry
+echo "2024-01-15,taxes.pdf,abc123xyz,TaxPass2024" >> blob_registry.csv
+echo "2024-01-16,contract.pdf,def456uvw,ContractPass" >> blob_registry.csv
+
+# Or use a password manager's notes field
+```
+
+### 2. Test Before Deleting Originals
+```bash
+# Encrypt
+./mothrbox encrypt important.pdf "Password123"
+
+# Test decryption immediately
+./mothrbox decrypt <blob-id> test_recovery.pdf "Password123"
+
+# Compare files
+diff important.pdf data/test_recovery.pdf
+
+# Only delete original if files match
+rm important.pdf  # Only after verifying!
+```
+
+### 3. Use Strong Passwords
+```bash
+# Bad
+./mothrbox encrypt file.pdf "password"
+
+# Good
+./mothrbox encrypt file.pdf "Tr0ng!P@ssw0rd#2024$WithMixedCase"
+
+# Better - generate random password
+PASSWORD=$(openssl rand -base64 32)
+./mothrbox encrypt file.pdf "$PASSWORD"
+echo "Password: $PASSWORD" >> passwords.txt  # Store securely!
+```
+
+### 4. Choose the Right Algorithm
+```bash
+# Desktop/Server with Intel/AMD → AES (hardware accelerated)
+./mothrbox encrypt large_file.iso "Password123"
+
+# Mobile/ARM device → ChaCha20 (software optimized)
+./mothrbox chacha-encrypt mobile_data.db "Password123"
+
+# Sharing with others → ECC (no password needed)
+./mothrbox ecc-encrypt shared_doc.pdf recipient_public.key
+```
+
+---
+
+## What to Do with Blob IDs
+
+Blob IDs are **public identifiers** - they're safe to share, but useless without the password/key:
+
+### ✅ Safe to Share Blob IDs Via:
+- Email
+- Slack/Discord
+- Public GitHub issues
+- Social media (if needed)
+
+### ❌ Never Share Together:
+- Blob ID + Password in same message
+- Blob ID + Private key in same location
+
+### Best Practice:
+```
+Channel 1 (Email): "Here's the blob ID: abc123xyz"
+Channel 2 (Phone call): "The password is: SecurePass123"
+```
+
+---
+
+## Troubleshooting
+
+### Container Not Running
+```bash
+./mothrbox status
+# If not running:
+./mothrbox start
+```
+
+### Forgot Blob ID
+```bash
+# Check your blob registry
+cat blob_registry.csv
+
+# Or check command history
+history | grep "Blob ID"
+```
+
+### Wrong Password
+```bash
+# Error: "Decryption failed"
+# Passwords are case-sensitive!
+# Double-check: "Password123" ≠ "password123"
+```
+
+### Insufficient SUI Tokens
+```bash
+# Get testnet tokens
+# Visit: https://faucet.testnet.sui.io/
+
+# Check balance
+sui client balance
+```
+
+---
+
+## Next Steps
+
+Now that you've encrypted your first file:
+
+1. 📖 **[CLI Reference](/docs/cli)** - Learn all available commands
+2. 🔐 **[Security Best Practices](/docs/security)** - Protect your data properly
+3. 🚀 **[Advanced Usage](/docs/advanced)** - Batch operations, automation scripts
+4. 🏗️ **[Architecture](/docs/architecture)** - Understand how MothrBox works
+
+---
+
+## Common Workflows
+
+### Workflow 1: One-Time Confidential File
+```bash
+./mothrbox start
+./mothrbox encrypt confidential.pdf "OneTimePass123"
+# Share blob ID + password separately
+# Delete local file: shred -vfz -n 10 confidential.pdf
+```
+
+### Workflow 2: Regular Backups
+```bash
+# See "Example 4: Automated Daily Backup" above
+# Use cron for automation
+```
+
+### Workflow 3: Team File Sharing
+```bash
+# Generate team keys once
+./mothrbox keygen  # Each team member does this
+
+# Share public keys via GitHub/wiki
+# Encrypt for each recipient individually
+./mothrbox ecc-encrypt report.pdf alice_public.key
+./mothrbox ecc-encrypt report.pdf bob_public.key
+./mothrbox ecc-encrypt report.pdf carol_public.key
+```
+
+---
+
+> 🎉 **Congratulations!** You've successfully encrypted and retrieved your first file with MothrBox. You're now ready to secure all your important data! 🦋🔒

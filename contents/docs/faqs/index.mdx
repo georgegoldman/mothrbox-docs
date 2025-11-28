@@ -1,11 +1,573 @@
-# ❓ FAQs
+---
+title: FAQ
+description: Frequently asked questions about MothrBox encrypted decentralized storage.
+---
 
-## Can I use Mothrbox in frontend apps?
-No. Never expose API keys client-side. Use Mothrbox from your backend.
-## What happens if I lose the private key?
-Encrypted files will be unreadable. Mothrbox cannot recover your key.
-## What’s the max file size?
-Currently 100MB per file. Larger limits coming soon.
+# ❓ Frequently Asked Questions
 
-## Where is the data stored?
-Data is stored across edge and decentralized storage networks, optimized for performance.
+## General Questions
+
+### What is MothrBox?
+
+MothrBox is a self-hosted encrypted decentralized storage system that combines military-grade encryption (AES-256-GCM, ChaCha20-Poly1305, ECC P-256) with Walrus Protocol's decentralized storage infrastructure. It encrypts your data locally before uploading to a distributed network.
+
+### Is MothrBox free?
+
+**Self-hosted version:** Yes, the CLI tool is completely free and open-source. You only pay for Sui network transaction fees (typically a few cents per upload).
+
+**Managed API:** Coming soon with free and paid tiers.
+
+### Do I need to run a server?
+
+No server needed! MothrBox runs locally on your machine using Docker. Your data is encrypted locally and stored on Walrus Protocol's decentralized network.
+
+---
+
+## Installation & Setup
+
+### What are the system requirements?
+
+**Minimum:**
+- Docker 20.10+
+- 2GB RAM
+- 5GB disk space
+- Linux, macOS, or Windows (WSL2)
+- Sui wallet with testnet/mainnet tokens
+
+**Recommended:**
+- 4GB+ RAM
+- 10GB+ disk space
+- Fast internet connection
+
+### How do I get started?
+
+```bash
+# Clone repository
+git clone https://github.com/georgegoldman/mothrbox_v2
+cd mothrbox_v2
+
+# Configure Sui wallet
+cd mothrbox_ts
+cp .env.example .env
+nano .env  # Add your SUI_SECRET_KEY
+
+# Build and start
+cd ..
+./mothrbox rebuild
+./mothrbox start
+```
+
+See the [Installation Guide](/docs/installation) for details.
+
+### Where do I get SUI tokens?
+
+**Testnet (Free):**
+- Visit [https://faucet.testnet.sui.io/](https://faucet.testnet.sui.io/)
+- Enter your wallet address
+- Get free testnet SUI for testing
+
+**Mainnet:**
+- Purchase from exchanges (Binance, Coinbase, etc.)
+- Typical cost: $0.01-0.05 per upload
+
+---
+
+## Encryption & Security
+
+### Which encryption algorithm should I use?
+
+**AES-256-GCM (Default):**
+- Best for desktop/server with Intel/AMD processors
+- Hardware-accelerated, fastest for most users
+- NIST/FIPS compliant
+
+**ChaCha20-Poly1305:**
+- Best for mobile devices and ARM processors
+- Faster on devices without AES hardware acceleration
+- Great for IoT and Raspberry Pi
+
+**ECC (P-256):**
+- Best for sharing without password exchange
+- Use public key cryptography
+- Perfect for multi-recipient scenarios
+
+See [Storage Modes](/docs/storage-modes) for detailed comparison.
+
+### What happens if I lose my password?
+
+**Password-based (AES, ChaCha20):** Your data is **permanently unrecoverable**. MothrBox cannot reset or recover passwords. Always:
+- Use a password manager
+- Store passwords securely
+- Test decryption before deleting originals
+
+**Key-based (ECC):** If you lose your private key, the data is **permanently unrecoverable**. Always:
+- Back up private keys securely
+- Store encrypted copies in multiple locations
+- Never share private keys
+
+### What happens if I lose the private key (ECC)?
+
+Encrypted files will be **permanently unreadable**. MothrBox cannot recover your key. This is by design - true end-to-end encryption means only you control access.
+
+**Prevention:**
+```bash
+# Back up private key securely
+cp data/private.key /secure/backup/location/
+gpg --symmetric --cipher-algo AES256 private.key
+# Store encrypted backup in multiple locations
+```
+
+### Is my data really private?
+
+**Yes, absolutely.** Your data is encrypted **before it leaves your machine**. MothrBox never sees your unencrypted data, passwords, or private keys. The encryption happens locally in the Rust engine running in your Docker container.
+
+**No one can access your data without:**
+- Password-based: Your password
+- Key-based: Your private key
+
+Not even the Walrus Protocol operators can decrypt your files.
+
+### Can Walrus Protocol see my files?
+
+No. Walrus Protocol only stores **encrypted blobs**. They cannot:
+- See the original filename
+- Read the content
+- Decrypt the data
+- Know what's inside
+
+Only you (with the password or private key) can decrypt.
+
+### Are passwords stored anywhere?
+
+**No.** Passwords and private keys are **never stored** by MothrBox. They exist only:
+1. In your memory
+2. In your command when you type it
+3. Temporarily in RAM during encryption/decryption
+
+Once the operation completes, they're gone.
+
+---
+
+## Data Storage
+
+### Where is my data stored?
+
+Your encrypted data is stored on **Walrus Protocol**, a decentralized storage network built on Sui blockchain. Data is:
+- Distributed across multiple storage nodes
+- Protected by erasure coding (survives node failures)
+- Backed by blockchain storage proofs
+
+### How long is data stored?
+
+**Default:** 3 epochs (~30 days for testnet)
+
+You can configure longer storage:
+```bash
+# In mothrbox_ts/.env
+WALRUS_EPOCHS=10  # ~100 days
+```
+
+For permanent storage, you'll need to periodically renew storage epochs.
+
+### What's the max file size?
+
+**Current limits:**
+- No hard limit in MothrBox CLI
+- Limited by available RAM and Walrus Protocol constraints
+- Practical limit: ~1GB per file recommended
+- Larger files: Split into chunks or compress first
+
+**Tips for large files:**
+```bash
+# Compress before encrypting
+tar czf archive.tar.gz large_directory/
+./mothrbox encrypt archive.tar.gz "Password123"
+
+# Split large files
+split -b 500M huge_file.iso part_
+./mothrbox encrypt part_aa "Password123"
+./mothrbox encrypt part_ab "Password123"
+```
+
+### Can I delete uploaded data?
+
+**Yes, but:**
+- You need the blob ID
+- Deletion depends on Walrus Protocol support
+- After storage epoch expires, data is automatically removed
+- Currently, explicit deletion requires direct Walrus API calls
+
+### What happens if storage nodes go offline?
+
+**Erasure coding protects your data.** Walrus Protocol uses erasure coding, meaning:
+- Data is split across multiple nodes
+- Can survive multiple node failures
+- Automatically reconstructs data from available nodes
+- Default redundancy survives loss of 2/3 of nodes
+
+---
+
+## Usage & Operations
+
+### Can I use MothrBox without Docker?
+
+Not easily. The current architecture requires:
+- Docker container for Rust encryption engine
+- Deno runtime for Walrus client
+- Specific dependency versions
+
+You could manually set up the environment, but Docker is **strongly recommended** for reliability.
+
+### Can I run MothrBox on a server?
+
+Yes! MothrBox works great on servers:
+```bash
+# Remote server via SSH
+ssh user@server
+cd mothrbox_v2
+./mothrbox start
+
+# Run in background
+nohup ./mothrbox start &
+
+# Or use systemd service (advanced)
+```
+
+### How do I backup multiple files?
+
+**Option 1: Individual encryption**
+```bash
+for file in *.pdf; do
+  ./mothrbox encrypt "$file" "Password123"
+done
+```
+
+**Option 2: Archive first**
+```bash
+tar czf backup.tar.gz ~/important_files/
+./mothrbox encrypt backup.tar.gz "BackupPass123"
+```
+
+**Option 3: Automated script**
+```bash
+#!/bin/bash
+DATE=$(date +%Y%m%d)
+tar czf "backup_${DATE}.tar.gz" ~/Documents/
+./mothrbox encrypt "backup_${DATE}.tar.gz" "$BACKUP_PASSWORD"
+rm "backup_${DATE}.tar.gz"
+```
+
+### Can I share encrypted files with others?
+
+**Yes, three ways:**
+
+**Method 1: Share password (AES/ChaCha20)**
+```bash
+./mothrbox encrypt file.pdf "SharedPassword123"
+# Share blob ID via email
+# Share password via phone/Signal
+```
+
+**Method 2: Use ECC (no password exchange)**
+```bash
+./mothrbox keygen  # Recipient generates keys
+./mothrbox ecc-encrypt file.pdf recipient_public.key
+# Share blob ID publicly - only they can decrypt
+```
+
+**Method 3: Multi-recipient (ECC)**
+```bash
+# Encrypt once for each recipient
+./mothrbox ecc-encrypt file.pdf alice_public.key
+./mothrbox ecc-encrypt file.pdf bob_public.key
+./mothrbox ecc-encrypt file.pdf carol_public.key
+```
+
+### Can I automate backups?
+
+**Yes, with cron:**
+```bash
+# Create backup script
+cat > ~/backup.sh << 'EOF'
+#!/bin/bash
+cd ~/mothrbox_v2
+./mothrbox start
+DATE=$(date +%Y%m%d)
+tar czf "/tmp/backup_${DATE}.tar.gz" ~/important_files/
+./mothrbox encrypt "/tmp/backup_${DATE}.tar.gz" "$BACKUP_PASSWORD"
+rm "/tmp/backup_${DATE}.tar.gz"
+EOF
+
+chmod +x ~/backup.sh
+
+# Schedule daily at 2 AM
+crontab -e
+# Add: 0 2 * * * /home/user/backup.sh
+```
+
+---
+
+## Blob IDs & Retrieval
+
+### What is a blob ID?
+
+A blob ID is a **unique identifier** for your encrypted data stored on Walrus Protocol. It looks like:
+```
+DcNxScTcvltoCYZwLPVC45QNFpddxjL8FmueI7I7-Ho
+```
+
+**Important:**
+- Blob ID alone cannot decrypt your data
+- Safe to share publicly
+- Needed to retrieve your files
+- Store in password manager or secure notes
+
+### Are blob IDs safe to share?
+
+**Yes!** Blob IDs are public identifiers. They're useless without:
+- Password (for AES/ChaCha20)
+- Private key (for ECC)
+
+**Safe to share via:**
+- Email, Slack, Discord
+- Public GitHub issues
+- Social media
+- Documentation
+
+**Never share together:**
+- Blob ID + password in same message
+- Blob ID + private key in same location
+
+### I lost my blob ID. Can I recover it?
+
+**No built-in recovery**, but you might find it in:
+
+```bash
+# Command history
+history | grep "Blob ID"
+
+# Your blob registry (if you created one)
+cat blob_registry.csv
+
+# Terminal scrollback
+# Scroll up in your terminal
+
+# Log files (if you redirected output)
+cat mothrbox_output.log
+```
+
+**Prevention:**
+```bash
+# Always save blob IDs
+echo "$(date),filename.pdf,<blob-id>" >> blob_registry.csv
+```
+
+---
+
+## Performance & Costs
+
+### How fast is encryption/decryption?
+
+**Approximate speeds:**
+
+| Algorithm | 100MB File |
+|-----------|-----------|
+| AES-256-GCM* | ~200ms |
+| ChaCha20 | ~250ms |
+| ECC | ~2s |
+
+*With AES-NI hardware acceleration
+
+### How much does it cost?
+
+**Self-hosted CLI:**
+- Software: **Free** (open-source)
+- Sui transaction fees: ~$0.01-0.05 per upload
+- Storage: Included in transaction fee (default 3 epochs)
+- No monthly subscription
+
+**Testnet:** Completely free (using testnet SUI tokens)
+
+### How much SUI do I need?
+
+**Testnet:** Free unlimited tokens from faucet
+
+**Mainnet:** ~$1-5 of SUI tokens for casual use (100-500 files)
+
+---
+
+## Troubleshooting
+
+### Container won't start
+
+```bash
+# Check Docker
+docker --version
+
+# Check if port 8000 is available
+sudo lsof -i :8000
+
+# View logs
+./mothrbox logs
+
+# Clean rebuild
+./mothrbox clean
+./mothrbox rebuild
+./mothrbox start
+```
+
+### Encryption fails
+
+```bash
+# Check container status
+./mothrbox status
+
+# Check file exists
+ls -lh file.pdf
+
+# Check permissions
+chmod 644 file.pdf
+
+# Try with absolute path
+./mothrbox encrypt /full/path/to/file.pdf "Password"
+```
+
+### Upload fails
+
+```bash
+# Check .env configuration
+cat mothrbox_ts/.env
+
+# Verify SUI_SECRET_KEY is set
+# Check SUI balance
+sui client balance
+
+# Get testnet tokens
+# Visit: https://faucet.testnet.sui.io/
+```
+
+### Decryption fails
+
+**Common causes:**
+1. Wrong password (case-sensitive!)
+2. Wrong blob ID (typo?)
+3. Wrong encryption algorithm
+4. Storage epoch expired
+
+```bash
+# Try manual download first
+docker exec mothrbox_system bash -c "
+  deno run -A --env-file=mothrbox_ts/.env \
+  mothrbox_ts/src/walrus-cli.ts download <blob-id> /app/data/test.enc
+"
+
+# Check if file was downloaded
+ls -lh data/test.enc
+```
+
+---
+
+## Comparison with Alternatives
+
+### How is MothrBox different from Dropbox/Google Drive?
+
+| Feature | MothrBox | Dropbox/Drive |
+|---------|----------|---------------|
+| **Encryption** | End-to-end, client-side | Server-side (they have keys) |
+| **Privacy** | You control keys | Provider can access files |
+| **Decentralized** | Yes (Walrus Protocol) | No (central servers) |
+| **Censorship** | Resistant | Can be taken down |
+| **Cost** | Pay per upload (~$0.01) | Monthly subscription ($10+) |
+| **Self-hosted** | Yes | No |
+
+### How is MothrBox different from AWS S3?
+
+| Feature | MothrBox | AWS S3 |
+|---------|----------|--------|
+| **Encryption** | Automatic, client-side | Optional, you configure |
+| **Decentralized** | Yes | No (AWS datacenters) |
+| **Privacy** | True zero-knowledge | AWS can access with keys |
+| **Vendor lock-in** | No | Yes (AWS ecosystem) |
+| **Compliance** | Built-in encryption | You manage |
+
+---
+
+## Future Features
+
+### Will there be a managed API?
+
+**Yes!** A managed REST API is coming soon with:
+- No Docker setup required
+- Auto-scaling infrastructure
+- SLA guarantees
+- Team collaboration features
+- API keys instead of self-hosting
+
+### Will there be SDKs?
+
+**Yes!** Official SDKs planned for:
+- JavaScript/TypeScript
+- Python
+- Rust
+- Go
+
+Currently, you can use the CLI or call the Docker container directly from your code.
+
+### Will there be a GUI?
+
+**Yes!** A web-based GUI is planned for:
+- Drag-and-drop file encryption
+- Visual file management
+- Blob ID registry
+- Team sharing features
+
+---
+
+## Community & Support
+
+### Where can I get help?
+
+- 📖 **Documentation**: Read all docs pages
+- 🐙 **GitHub Issues**: [Report bugs](https://github.com/georgegoldman/mothrbox_v2/issues)
+- 💬 **Discord**: Coming soon
+- 📧 **Email**: Check repository for contact info
+
+### How can I contribute?
+
+MothrBox is open-source! Contributions welcome:
+
+```bash
+# Fork the repository
+# Make your changes
+# Submit a pull request
+```
+
+Areas needing help:
+- Documentation improvements
+- Bug fixes
+- New encryption algorithms
+- Performance optimizations
+- GUI development
+
+### Is MothrBox production-ready?
+
+**Current status:**
+- ✅ Encryption: Production-ready (military-grade algorithms)
+- ✅ CLI: Stable and tested
+- ✅ Self-hosted: Ready for personal and team use
+- ⚠️ Managed API: Coming soon
+- ⚠️ Large-scale enterprise: Test thoroughly first
+
+**Recommendation:** Start with testnet, move to mainnet after testing.
+
+---
+
+## Still have questions?
+
+- 📖 Check other [documentation pages](/docs)
+- 🐙 [Open a GitHub issue](https://github.com/georgegoldman/mothrbox_v2/issues)
+- 💬 Join our Discord (coming soon)
+
+---
+
+> 💡 **Didn't find your answer?** Open a GitHub issue and we'll add it to this FAQ! 🦋🔒
