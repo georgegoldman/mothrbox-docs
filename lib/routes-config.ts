@@ -44,13 +44,13 @@ export const ROUTES: EachRoute[] = [
       {title: "📂 Storage Modes", href: "/storage-modes"},
     ]
   },
-  {
-    title: "Reference", href: "/reference",
-    noLink: true,
-    items: [
-      {title: "📚 API Reference", href:"/api-reference"}
-    ]
-  },
+  // {
+  //   title: "Reference", href: "/reference",
+  //   noLink: true,
+  //   items: [
+  //     {title: "📚 API Reference", href:"/api-reference"}
+  //   ]
+  // },
   {
     title: "Use Cases",
     href: "/use-cases",
