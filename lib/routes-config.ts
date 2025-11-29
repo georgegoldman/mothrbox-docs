@@ -1,6 +1,6 @@
 // for page navigation & to sort on leftbar
 
-import { title } from "process";
+// import { title } from "process";
 
 export type EachRoute = {
   title: string;
@@ -35,22 +35,22 @@ export const ROUTES: EachRoute[] = [
       {title: "⚡ Quickstart", href: "/quickstart"}
     ]
   },
-  // {
-  //   title: "Concepts",
-  //   href: "/concepts",
-  //   noLink: true,
-  //   items: [
-  //     // {title: "🔐 Authentication", href: "/authentication"},
-  //     {title: "📂 Storage Modes", href: "/storage-modes"},
-  //   ]
-  // },
-  // {
-  //   title: "Reference", href: "/reference",
-  //   noLink: true,
-  //   items: [
-  //     {title: "📚 API Reference", href:"/api-reference"}
-  //   ]
-  // },
+  {
+    title: "Concepts",
+    href: "/concepts",
+    noLink: true,
+    items: [
+      // {title: "🔐 Authentication", href: "/authentication"},
+      {title: "📂 Storage Modes", href: "/storage-modes"},
+    ]
+  },
+  {
+    title: "Reference", href: "/reference",
+    noLink: true,
+    items: [
+      {title: "📚 API Reference", href:"/api-reference"}
+    ]
+  },
   {
     title: "Use Cases",
     href: "/use-cases",
@@ -68,14 +68,14 @@ export const ROUTES: EachRoute[] = [
     items : [
       {title: "📦 SDKs (Coming Soon)", href: "/coming-soon"}
     ]
-  }
+  },
   // {
   //   title: "Server Actions",
   //   href: "/server-actions",
   //   noLink: true,
   //   items: [
-  //     { title: "getSession", href: "/getSession" },
-  //     { title: "getToken", href: "/getToken" },
+  //     // { title: "getSession", href: "/getSession" },
+  //     // { title: "getToken", href: "/getToken" },
   //   ],
   // },
 ];
