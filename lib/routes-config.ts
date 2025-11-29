@@ -35,15 +35,15 @@ export const ROUTES: EachRoute[] = [
       {title: "⚡ Quickstart", href: "/quickstart"}
     ]
   },
-  {
-    title: "Concepts",
-    href: "/concepts",
-    noLink: true,
-    items: [
-      // {title: "🔐 Authentication", href: "/authentication"},
-      {title: "📂 Storage Modes", href: "/storage-modes"},
-    ]
-  },
+  // {
+  //   title: "Concepts",
+  //   href: "/concepts",
+  //   noLink: true,
+  //   items: [
+  //     // {title: "🔐 Authentication", href: "/authentication"},
+  //     {title: "📂 Storage Modes", href: "/storage-modes"},
+  //   ]
+  // },
   // {
   //   title: "Reference", href: "/reference",
   //   noLink: true,
