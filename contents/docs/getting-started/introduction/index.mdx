@@ -140,14 +140,14 @@ echo "Secret data" > test.txt
 │                    MOTHRBOX                         │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
-│  ┌──────────────────┐ bash ┌──────────────────┐   │
-│  │   Rust Engine    │ ◄──► │  Deno Walrus     │   │
-│  │  (Encryption)    │      │    Client        │   │
-│  │                  │      │                  │   │
-│  │ - AES/ChaCha/ECC │      │ - Walrus SDK     │   │
-│  └──────────────────┘      └──────────────────┘   │
-│          │                          │              │
-│      File I/O                   RPC/JSON          │
+│  ┌──────────────────┐ bash ┌──────────────────┐     │
+│  │   Rust Engine    │ ◄──► │  Deno Walrus     │     │
+│  │  (Encryption)    │      │    Client        │     │
+│  │ - AES/ChaCha/ECC │      │ - Walrus SDK     │     │
+│  └──────────────────┘      └──────────────────┘     │
+│  │                  │      │                  │     │
+│          │                          │               │
+│      File I/O                   RPC/JSON            │
 │                                                     │
 └─────────────────────────────────────────────────────┘
          │                            │
