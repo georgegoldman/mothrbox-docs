@@ -1,0 +1,109 @@
+---
+title: JavaScript SDK
+description: Integrate Mothrbox encrypted decentralized storage into web and Node.js applications using the JavaScript/TypeScript SDK.
+---
+
+# 📦 JavaScript/TypeScript SDK
+
+The Mothrbox JavaScript SDK enables seamless integration of military-grade encrypted storage into any web, React, Next.js, or Node.js application.
+
+All encryption happens **client-side** in the browser or Node environment — your keys and data never touch Mothrbox servers.
+
+## Installation
+
+```bash
+npm install @mothrbox/sdk
+# or
+yarn add @mothrbox/sdk
+```
+
+## Initialization
+
+```ts
+import { MothrboxClient } from '@mothrbox/sdk';
+
+// Initialize the client (points to Walrus network via Mothrbox gateway)
+const client = new MothrboxClient({
+  // Optional: custom gateway URL
+  // gateway: 'https://api.mothrbox.xyz'
+});
+```
+
+## Basic Usage
+
+### Encrypt & Upload a File (AES-256-GCM - Default)
+
+```ts
+import { EncryptionMode } from '@mothrbox/sdk';
+
+const file = fileInput.files[0]; // From <input type="file">
+const password = "MyStrongPassword2026!";
+
+const { blobId, encryptedBlob } = await client.encryptAndUpload({
+  file,
+  password,
+  mode: EncryptionMode.AES256GCM, // default
+});
+
+console.log('Uploaded! Blob ID:', blobId);
+// Save blobId for later retrieval
+```
+
+### Download & Decrypt
+
+```ts
+const blobId = "abc123xyz..."; // From previous upload or shared
+const password = "MyStrongPassword2026!";
+
+const decryptedFile = await client.downloadAndDecrypt({
+  blobId,
+  password,
+  originalFilename: "original-name.pdf" // optional, for correct extension
+});
+
+// Create downloadable link
+const url = URL.createObjectURL(decryptedFile);
+const a = document.createElement('a');
+a.href = url;
+a.download = decryptedFile.name;
+a.click();
+```
+
+## Supported Encryption Modes
+
+```ts
+EncryptionMode.AES256GCM       // Default - best for web/desktop
+EncryptionMode.ChaCha20Poly1305 // Better performance on mobile
+EncryptionMode.ECC_P256         // Public-key (coming soon)
+```
+
+## Advanced: Streaming Large Files
+
+```ts
+await client.encryptAndUpload({
+  file: largeVideoFile,
+  password: "Pass2026!",
+  onProgress: (progress: number) => {
+    console.log(`Upload: ${progress}%`);
+  }
+});
+```
+
+## Browser vs Node.js
+- Works in modern browsers (Chrome, Firefox, Safari, Edge)
+- Full Node.js support for server-side encryption
+- No external dependencies beyond crypto standards
+
+## Coming Soon
+- ECC public-key encryption support
+- Multi-recipient sharing
+- React hooks (`useMothrboxUpload`, etc.)
+- Next.js examples
+
+## Resources
+- GitHub: https://github.com/georgegoldman/mothrbox_v2
+- Full API docs: [API Reference](/docs/platforms/sdk/api-reference)
+
+## Next Steps
+- [Rust SDK](/docs/platforms/sdk/rust) → High-performance native apps
+- [API Reference](/docs/platforms/sdk/api-reference) → Complete method and type documentation
