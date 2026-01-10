@@ -1,0 +1,74 @@
+---
+title: Quickstart
+description: Get started with the Mothrbox CLI in minutes — install, configure, and encrypt your first file.
+---
+
+# ⚡ CLI Quickstart
+
+Get Mothrbox running locally and encrypt your first file in under 5 minutes using the command-line interface.
+
+## Prerequisites
+- Linux, macOS, or Windows (WSL2 recommended)
+- Docker & Docker Compose installed
+- A Sui wallet with testnet/mainnet tokens
+
+## Step-by-Step Setup
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/georgegoldman/mothrbox_v2
+cd mothrbox_v2
+```
+
+### 2. Make CLI Executable
+```bash
+chmod +x mothrbox
+```
+
+### 3. Configure Your Sui Wallet
+```bash
+cd mothrbox_ts
+cp .env.example .env
+nano .env  # Edit and add your SUI_SECRET_KEY
+cd ..
+```
+
+### 4. Build and Start Mothrbox
+```bash
+./mothrbox build
+./mothrbox start
+```
+
+Expected output:
+```
+✅ MothrBox server is running!
+```
+
+### 5. Encrypt Your First File (AES-256-GCM)
+```bash
+echo "My secret data" > secret.txt
+./mothrbox encrypt secret.txt "StrongPassword2025!"
+```
+
+You’ll see:
+```
+✅ Encrypted and uploaded successfully!
+📦 Encrypted Blob ID: abc123xyz...
+```
+
+> 🔑 **Save this Blob ID and password securely!**
+
+### 6. Download and Decrypt
+```bash
+./mothrbox decrypt abc123xyz... recovered.txt "StrongPassword2025!"
+cat data/recovered.txt
+# Output: My secret data
+```
+
+🎉 Done! You’ve successfully used the Mothrbox CLI.
+
+## Next Steps
+- [Commands Reference](/docs/platforms/cli/commands) → Full list of all CLI commands
+- [Advanced Usage](/docs/platforms/cli/advanced) → Deep dive into encryption modes
+- [Troubleshooting](/docs/platforms/cli/troubleshooting) → Solve common issues
+```

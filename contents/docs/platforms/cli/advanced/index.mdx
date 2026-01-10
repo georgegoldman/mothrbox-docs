@@ -1,0 +1,71 @@
+---
+title: Advanced Usage
+description: Deep dive into Mothrbox encryption algorithms, performance characteristics, and best-use scenarios.
+---
+
+# 🚀 Advanced Usage
+
+Understand the three encryption modes and choose the right one for your needs.
+
+## Encryption Algorithms Overview
+
+Mothrbox supports three battle-tested encryption algorithms, each optimized for different scenarios:
+
+| Feature                  | AES-256-GCM                          | ChaCha20-Poly1305                    | ECC (P-256)                          |
+|--------------------------|--------------------------------------|--------------------------------------|--------------------------------------|
+| **Speed (Desktop/x86)**  | Very Fast (hardware accelerated)     | Fast                                 | Moderate                             |
+| **Speed (Mobile/ARM)**   | Good                                 | Excellent (software optimized)       | Good                                 |
+| **Hardware Acceleration**| ✅ AES-NI (Intel/AMD)                 | ❌ None                               | ❌ None                               |
+| **Authentication**       | Password-based                       | Password-based                       | Public/Private Key (no password)     |
+| **Multi-Recipient**      | Requires re-encryption per recipient | Requires re-encryption per recipient | ✅ Native (encrypt once for many)     |
+| **Overhead**             | +28 bytes                            | +44 bytes                            | +65 bytes                            |
+| **Best For**             | General purpose, large files, compliance | Mobile, IoT, ARM devices            | Secure sharing without password exchange |
+
+## When to Use Each Mode
+
+### AES-256-GCM (Default)
+- Ideal for desktops/servers with Intel or AMD CPUs
+- Industry standard used by Signal, WhatsApp, 1Password
+- NIST-approved and FIPS-compliant
+- Perfect for enterprise backups, legal documents, healthcare data
+
+```bash
+./mothrbox encrypt large-backup.tar.gz "EnterprisePass2026!"
+```
+
+### ChaCha20-Poly1305
+- Faster on devices without hardware acceleration (phones, Raspberry Pi, IoT)
+- Used in WireGuard VPN and modern TLS
+- Constant-time implementation resists timing attacks
+
+```bash
+./mothrbox chacha-encrypt mobile-photos.zip "MobileBackup2026!"
+```
+
+### ECC P-256 (Public-Key Encryption)
+- No password sharing required — perfect for collaboration
+- Encrypt once for multiple recipients using their public keys
+- Based on NIST P-256 curve (NSA Suite B approved)
+
+```bash
+# Generate keys (once per user)
+./mothrbox keygen
+
+# Share your public.key freely
+./mothrbox ecc-encrypt team-report.pdf alice_public.key
+./mothrbox ecc-encrypt team-report.pdf bob_public.key
+# Same Blob ID works for both — only they can decrypt!
+```
+
+## Security Best Practices
+- Use strong, unique passwords (20+ characters)
+- Store Blob IDs and passwords/keys in separate locations
+- Test decryption before deleting original files
+- Shred local files after successful upload:
+  ```bash
+  shred -vfz -n 10 sensitive-file.pdf
+  ```
+
+## Next Steps
+- [Troubleshooting](/docs/platforms/cli/troubleshooting) → Resolve common issues
+```
