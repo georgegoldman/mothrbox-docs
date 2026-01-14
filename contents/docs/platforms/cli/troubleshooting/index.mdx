@@ -1,0 +1,77 @@
+---
+title: Troubleshooting
+description: Common issues with the Mothrbox CLI and how to fix them.
+---
+
+# 🔧 Troubleshooting
+
+Common problems and their solutions when using the Mothrbox CLI.
+
+## System Not Starting or Status Shows Stopped
+
+```bash
+./mothrbox status
+# If not running:
+./mothrbox start
+./mothrbox logs  # Check for errors in output
+```
+
+Common causes:
+- Docker not running — start Docker daemon
+- Port conflict — stop other services on the same port
+- Permission issues — run with sudo if needed (not recommended long-term)
+
+## Upload Failed / "Upload to Walrus failed"
+
+- Check your `.env` file has correct `SUI_SECRET_KEY`
+- Verify wallet has SUI tokens:
+  ```bash
+  sui client balance
+  ```
+- Get testnet tokens: https://faucet.testnet.sui.io/
+- Restart system:
+  ```bash
+  ./mothrbox restart
+  ```
+
+## Decryption Failed / "Decryption failed: invalid MAC"
+
+Most common causes:
+1. Wrong password (case-sensitive!)
+2. Wrong encryption mode (used AES but trying ChaCha decrypt, or vice versa)
+3. Wrong Blob ID (copy-paste error)
+
+Double-check:
+- Exact Blob ID
+- Exact password
+- Matching encrypt/decrypt command
+
+Test with known good file if possible.
+
+## "Container not found" or Docker Errors
+
+```bash
+docker ps -a | grep mothrbox
+./mothrbox rebuild  # Rebuild containers
+./mothrbox clean    # Full reset (deletes data — use carefully)
+```
+
+## Key Issues (ECC Mode)
+
+- "Invalid public key" → Key file corrupted or wrong format
+- "Private key required" → Make sure private.key is in data/ folder
+- Lost private key → **Irrecoverable** — data cannot be decrypted
+
+## Network / Connection Issues
+
+- Ensure internet connection
+- Walrus network may have temporary outages — check status if available
+- Try again in a few minutes
+
+## Still Stuck?
+
+- Check GitHub repo for issues: https://github.com/georgegoldman/mothrbox_v2/issues
+- Run with verbose logs:
+  ```bash
+  ./mothrbox logs
+  ```

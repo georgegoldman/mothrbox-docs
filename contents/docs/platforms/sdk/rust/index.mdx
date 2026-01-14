@@ -1,0 +1,108 @@
+---
+title: Rust SDK
+description: High-performance Mothrbox integration for Rust applications with native encryption and zero dependencies.
+---
+
+# 🦀 Rust SDK
+
+The Mothrbox Rust SDK provides **native, zero-dependency** integration for building fast, secure applications with encrypted decentralized storage.
+
+Designed for performance-critical use cases, the Rust SDK compiles to WebAssembly (Wasm) for browser use or native binaries for servers/desktops.
+
+All encryption is performed using Rust's battle-tested crypto libraries — no JavaScript or external runtimes required.
+
+## Add to Your Project
+
+```toml
+# Cargo.toml
+[dependencies]
+mothrbox-sdk = "0.1.0"  # Coming soon
+```
+
+## Basic Usage
+
+### Encrypt & Upload (AES-256-GCM - Default)
+
+```rust
+use mothrbox_sdk::{MothrboxClient, EncryptionMode};
+use std::fs;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = MothrboxClient::new(); // Uses default gateway
+
+    let file_data = fs::read("confidential.pdf")?;
+    let password = "MyStrongRustPassword2026!";
+
+    let upload_result = client.encrypt_and_upload(
+        &file_data,
+        "confidential.pdf",
+        password,
+        EncryptionMode::Aes256Gcm, // default
+    ).await?;
+
+    println!("Uploaded! Blob ID: {}", upload_result.blob_id);
+    // Securely store blob_id for later
+
+    Ok(())
+}
+```
+
+### Download & Decrypt
+
+```rust
+use mothrbox_sdk::{MothrboxClient};
+use std::fs;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = MothrboxClient::new();
+
+    let blob_id = "abc123xyz...";
+    let password = "MyStrongRustPassword2026!";
+
+    let decrypted = client.download_and_decrypt(
+        blob_id,
+        password,
+    ).await?;
+
+    fs::write("recovered.pdf", decrypted.data)?;
+    println!("Decrypted {} bytes -> recovered.pdf", decrypted.data.len());
+
+    Ok(())
+}
+```
+
+## Supported Encryption Modes
+
+```rust
+EncryptionMode::Aes256Gcm         // Default - maximum speed on modern CPUs
+EncryptionMode::ChaCha20Poly1305   // Best software performance
+EncryptionMode::EccP256           // Public-key encryption (coming soon)
+```
+
+## Key Features
+- **No heap allocations** during encryption where possible
+- **Zero-copy** file handling for large data
+- **Wasm ready** — run in browser with `wasm32` target
+- **Async-first** with Tokio support
+- **No external crypto deps** — uses rustcrypto ecosystem
+
+## Use Cases
+- CLI tools and daemons
+- Embedded/IoT devices
+- High-performance backends
+- WebAssembly frontends needing native crypto speed
+- Systems requiring minimal binary size
+
+## Coming Soon
+- ECC public-key full support
+- Streaming API for multi-gigabyte files
+- Integration with popular frameworks (Actix, Axum, Leptos)
+
+## Resources
+- GitHub: https://github.com/georgegoldman/mothrbox_v2
+- Full docs: [API Reference](/docs/platforms/sdk/api-reference)
+
+## Next Steps
+- [API Reference](/docs/platforms/sdk/api-reference) → Detailed function and type documentation

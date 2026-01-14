@@ -1,0 +1,87 @@
+---
+title: Commands Reference
+description: Complete list of all Mothrbox CLI commands with examples and usage details.
+---
+
+# 📖 Commands Reference
+
+All commands are run using `./mothrbox <command> [arguments]`
+
+## System Management
+
+```bash
+./mothrbox start        # Start the Mothrbox system (Docker containers)
+./mothrbox stop         # Stop the running system
+./mothrbox restart      # Restart the system
+./mothrbox status       # Show current system status
+./mothrbox logs         # View real-time logs from containers
+./mothrbox rebuild      # Rebuild the system (useful after code changes)
+./mothrbox clean        # Remove all containers and data (use with caution!)
+./mothrbox test         # Run system tests
+./mothrbox help         # Display this help menu
+```
+
+## Encryption & Upload Commands
+
+### AES-256-GCM (Default - Best for general use & hardware acceleration)
+```bash
+./mothrbox encrypt <input-file> <password>
+# Example:
+./mothrbox encrypt confidential.pdf "MyStrongPassword2026!"
+```
+
+### ChaCha20-Poly1305 (Mobile & ARM optimized)
+```bash
+./mothrbox chacha-encrypt <input-file> <password>
+# Example:
+./mothrbox chacha-encrypt vacation-video.mp4 "MobilePass2026!"
+```
+
+### ECC P-256 (Public-key cryptography - no password sharing needed)
+```bash
+./mothrbox keygen                              # Generate your key pair (private.key + public.key)
+./mothrbox ecc-encrypt <input-file> <recipient-public.key>
+# Example:
+./mothrbox ecc-encrypt report.pdf bob_public.key
+```
+
+## Decryption & Download Commands
+
+```bash
+./mothrbox decrypt <blob-id> <output-file> <password>
+# AES or ChaCha20 example:
+./mothrbox decrypt abc123xyz... recovered.pdf "MyStrongPassword2026!"
+
+./mothrbox chacha-decrypt <blob-id> <output-file> <password>
+# ChaCha20 specific
+
+./mothrbox ecc-decrypt <blob-id> <output-file> <private.key>
+# ECC example:
+./mothrbox ecc-decrypt abc123xyz... report.pdf private.key
+```
+
+## Quick Examples
+
+### Batch Encryption
+```bash
+for file in *.docx; do
+  ./mothrbox encrypt "$file" "BatchPass2026!"
+done
+```
+
+### Secure Sharing (ECC - Password-free)
+```bash
+# Recipient shares their public.key with you
+./mothrbox ecc-encrypt sensitive-data.zip recipient_public.key
+# Send only the Blob ID - recipient uses their private key to decrypt
+```
+
+## Tips
+- Always save the **Blob ID** returned after upload
+- Store passwords/keys separately from Blob IDs
+- Test decryption immediately after upload
+
+## Next Steps
+- [Advanced Usage](/docs/platforms/cli/advanced) → Choose the right encryption mode for your use case
+- [Troubleshooting](/docs/platforms/cli/troubleshooting) → Fix common problems
+```

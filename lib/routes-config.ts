@@ -28,12 +28,45 @@ export const ROUTES: EachRoute[] = [
     ],
   },
   {
-    title: "Guides",
-    href: "/guides",
+    title: "Platforms",
+    href: "/platforms",
     noLink: true,
     items: [
-      {title: "⚡ Quickstart", href: "/quickstart"}
-    ]
+      {
+        title: "🌥️ Cloud",
+        href: "/cloud",
+        noLink: true,
+        items: [
+          { title: "✌️Overview", href: "/overview" },
+          { title: "⬆️Uploading Files", href: "/uploading-files" },
+          { title: "🗃️Managing Files", href: "/managing-files" },
+          { title: "📩Sharing Files", href: "/sharing-files" },
+          { title: "⚙️Account & Settings", href: "/account-settings" },
+        ],
+      }, 
+      {
+        title: "💻 CLI",
+        href: "/cli",
+        noLink: true,         
+        items: [
+          { title: "⚡ Quickstart", href: "/quickstart" },
+          { title: "🤖Commands Reference", href: "/commands" },
+          { title: ">_Advanced Usage", href: "/advanced" },
+          { title: "🛠️Troubleshooting", href: "/troubleshooting" },
+        ],
+      },
+      {
+        title: "🛠️ SDK",
+        href: "/sdk",
+        noLink: true,     
+        items: [
+          { title: "✌️Overview", href: "/overview" },
+          { title: "⚙️JavaScript SDK", href: "/javascript" },
+          { title: "🛠️Rust SDK", href: "/rust" },
+          { title: "⚡API Reference", href: "/api-reference" },
+        ],
+      },
+    ],
   },
   {
     title: "Concepts",
@@ -42,6 +75,8 @@ export const ROUTES: EachRoute[] = [
     items: [
       // {title: "🔐 Authentication", href: "/authentication"},
       {title: "📂 Storage Modes", href: "/storage-modes"},
+      { title: "🔐 Encryption Algorithms", href: "/encryption" },
+      { title: "🌐 Decentralized Storage", href: "/decentralized-storage" },
     ]
   },
   // {
@@ -55,19 +90,11 @@ export const ROUTES: EachRoute[] = [
     title: "Use Cases",
     href: "/use-cases",
     noLink: true,
-    items: [ {title: "Real World Example", href: "/real-world-examples"} ]
+    items: [ {title: "Real World Examples", href: "/real-world-examples"} ]
   },
   {
     title: "FAQs",
     href: "/faqs",
-  },
-  {
-    title: "SDKs",
-    href: "/sdks",
-    noLink: true,
-    items : [
-      {title: "📦 SDKs (Coming Soon)", href: "/coming-soon"}
-    ]
   },
   // {
   //   title: "Server Actions",

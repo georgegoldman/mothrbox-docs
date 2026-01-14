@@ -1,0 +1,104 @@
+---
+title: API Reference
+description: Complete reference for the Mothrbox SDK methods, types, and configuration options.
+---
+
+# 📚 API Reference
+
+Detailed documentation for the core Mothrbox SDK API. The API design is consistent across all SDKs (JavaScript/TypeScript and Rust), with only language-specific syntax differences.
+
+## Core Client
+
+### Initialization
+
+**JavaScript/TypeScript**
+
+```ts
+import { MothrboxClient } from '@mothrbox/sdk';
+
+const client = new MothrboxClient({
+  gateway?: string; // Default: 'https://api.mothrbox.xyz'
+});
+```
+
+## encryptAndUpload()
+
+Encrypts a file and uploads it to the decentralized Walrus network.
+
+### Parameters
+
+- `file` / `data`: File | Buffer | Uint8Array | `Vec<u8>` — The file contents
+- `filename`: string — Original filename (for metadata)
+- `password` / `key`: string — Password or private key path
+- `mode?`: EncryptionMode — Default: AES256GCM
+- `onProgress?`: (progress: number) => void — Upload progress callback (JS only)
+
+### Returns
+
+```ts
+{
+  blobId: string;    // Public Blob ID for sharing/retrieval
+  size: number;      // Encrypted size in bytes
+  uploadedAt: Date;
+}
+```
+
+## downloadAndDecrypt()
+
+Downloads and decrypts a file from a Blob ID.
+
+### Parameters
+
+- `blobId`: string — The Blob ID from upload
+- `password` / `key`: string — Matching password or private key
+- `originalFilename?`: string — For correct file extension
+
+### Returns
+
+```ts
+{
+  data: Uint8Array | Vec<u8>;
+  filename: string;
+  decryptedAt: Date;
+}
+```
+
+## Error Handling
+
+Common errors (thrown as structured exceptions):
+
+- `InvalidPassword` — Wrong password or key
+- `BlobNotFound` — Invalid or expired Blob ID
+- `NetworkError` — Connection or gateway issue
+- `UnsupportedMode` — Mode not available in current version
+
+All errors include `.code` and `.message` properties.
+
+## Configuration Options
+
+**JavaScript/TypeScript**
+
+```ts
+interface ClientOptions {
+  gateway?: string;
+  timeoutMs?: number;  // Default: 300000 (5 min)
+  retries?: number;    // Default: 3
+}
+```
+
+## Future Additions
+
+- Multi-recipient ECC encryption
+- Streaming API for very large files
+- Metadata attachments
+- Batch operations
+
+## Resources
+
+- GitHub Repository: https://github.com/georgegoldman/mothrbox_v2
+- Follow updates: [@mothrbox on X](https://x.com/mothrbox)
+
+## Related Pages
+
+- [JavaScript SDK](/docs/platforms/sdk/javascript) → Web & Node.js integration
+- [Rust SDK](/docs/platforms/sdk/rust) → High-performance native apps
