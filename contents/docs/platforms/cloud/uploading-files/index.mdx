@@ -8,35 +8,36 @@ description: Step-by-step guide to uploading and encrypting files in the Mothrbo
 Uploading is simple: drag-and-drop or click to select files. Encryption happens automatically in your browser.
 
 ### Step-by-Step Upload
+
 1. Log in to the dashboard.
 2. Click the **Upload** button (or drag files directly onto the page).
 
-   ![Upload button location](/img/cloud/upload-button.png)
+    ![Upload button location](/img/cloud/upload-button.png)
 
 3. Select your file(s) or folder (multiple uploads supported).
 4. Choose your **encryption mode** (default: AES-256-GCM):
+    - **AES-256-GCM** – Best for general use (fast on desktop)
+    - **XOR** – Optimized for mobile/ARM
+    - **ECC (coming soon)** – Public key encryption
 
-   - **AES-256-GCM** – Best for general use (fast on desktop)
-   - **XOR** – Optimized for mobile/ARM
-   - **ECC (coming soon)** – Public key encryption
-
-   ![Encryption mode selection](/img/cloud/encryption-mode.png)
+    ![Encryption mode selection](/img/cloud/encryption-mode.png)
 
 5. Enter a strong password (for password-based modes) or select a key.
 
-   > 🔑 Use 20+ characters. Never reuse passwords.
+    > 🔑 Use 20+ characters. Never reuse passwords.
 
 6. Click **Encrypt & Upload**.
 
-   ![Upload progress](/img/cloud/upload-progress.png)
+    ![Upload progress](/img/cloud/upload-progress.png)
 
 7. Once complete, you'll see the file in your list with its **Blob ID**.
 
-   ![Uploaded file confirmation](/img/cloud/uploaded-file.png)
+    ![Uploaded file confirmation](/img/cloud/uploaded-file.png)
 
 ### Tips
+
 - Maximum file size: Depends on your plan (Free: 100MB total, Pro: larger).
 - Upload multiple files at once for batches.
 - Progress is shown in real-time – safe to close tab after completion.
 
-Next: [Managing Files](/docs/cloud/managing-files)
+Next: [Managing Files](/docs/platform/cloud/managing-files)
